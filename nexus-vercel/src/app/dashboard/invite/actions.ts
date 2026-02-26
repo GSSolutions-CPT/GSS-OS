@@ -15,21 +15,40 @@ export async function inviteVisitor(formData: FormData) {
     const name = formData.get('name') as string
     const email = formData.get('email') as string
     const date = formData.get('date') as string
+    const needsParking = formData.get('needs_parking') === 'on'
 
     if (!name || !date) {
         return { error: 'Name and Access Date are required.' }
     }
 
+    // Fetch user's profile to get unit_id
+    const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('unit_id')
+        .eq('id', user.id)
+        .single()
+
+    if (profileError || !profile?.unit_id) {
+        return { error: 'User does not belong to a valid unit' }
+    }
+
     // 1. Generate 32-bit Wiegand integer (0 to 4294967295)
     const credentialNumber = Math.floor(Math.random() * 4294967296)
+
+    // Generate a 5-digit backup PIN
+    const pinCode = Math.floor(10000 + Math.random() * 90000).toString()
 
     // 2. Insert into Supabase
     const visitorData = {
         owner_id: user.id,
+        unit_id: profile.unit_id,
         visitor_name: name,
         visitor_email: email || null,
         access_date: date,
         credential_number: credentialNumber,
+        pin_code: pinCode,
+        needs_parking: needsParking,
+        status: 'active'
     }
 
     const { error: dbError } = await supabase
@@ -39,6 +58,13 @@ export async function inviteVisitor(formData: FormData) {
     if (dbError) {
         return { error: dbError.message }
     }
+
+    // Audit Log Creation
+    await supabase.from('audit_logs').insert({
+        actor_id: user.id,
+        action: 'INVITED_GUEST',
+        details: { visitor_name: name, access_date: date, needs_parking: needsParking }
+    })
 
     // 3. Hardware Bridge: Trigger External API Call
     // We don't await this if we want a fire-and-forget, but for reliability we await

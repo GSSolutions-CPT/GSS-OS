@@ -2,18 +2,20 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ShieldCheck, Users, PlusCircle, LogOut } from 'lucide-react'
+import { ShieldCheck, Activity, Building, ScrollText, Megaphone, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
-export function Sidebar() {
+export function SuperAdminSidebar() {
     const pathname = usePathname()
     const router = useRouter()
     const supabase = createClient()
 
     const links = [
-        { name: 'Visitors', href: '/dashboard', icon: Users },
-        { name: 'Invite', href: '/dashboard/invite', icon: PlusCircle },
+        { name: 'System Health', href: '/super-admin', icon: Activity },
+        { name: 'Unit Management', href: '/super-admin/units', icon: Building },
+        { name: 'Global Audit Logs', href: '/super-admin/logs', icon: ScrollText },
+        { name: 'Announcements', href: '/super-admin/announcements', icon: Megaphone },
     ]
 
     async function handleLogout() {
@@ -28,6 +30,11 @@ export function Sidebar() {
                 <ShieldCheck className="h-6 w-6 text-primary mr-2" />
                 <span className="font-bold tracking-tight text-lg text-foreground">Nexus Vercel</span>
             </div>
+
+            <div className="px-6 py-4 border-b border-border/50">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-destructive">Super Admin</span>
+            </div>
+
             <nav className="flex-1 space-y-2 px-4 py-6">
                 {links.map((link) => {
                     const isActive = pathname === link.href
@@ -48,19 +55,6 @@ export function Sidebar() {
                 })}
             </nav>
 
-            {/* Dashboard Upsell Widget */}
-            <div className="mx-4 mb-4 p-4 rounded-xl relative overflow-hidden group border border-border/50 bg-background/50">
-                <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-blue-500/10 opacity-50 transition-opacity group-hover:opacity-100" />
-                <div className="relative z-10 flex flex-col gap-2">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-primary">Secure Your Unit</span>
-                    <h4 className="text-sm font-semibold text-foreground leading-tight">Install AJAX Alarms & Hikvision CCTV</h4>
-                    <p className="text-xs text-muted-foreground mt-1 mb-2">Beat load-shedding with our integrated smart security systems.</p>
-                    <a href="https://gssolutions.co.za" target="_blank" rel="noreferrer" className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors inline-block text-center py-2 px-3 bg-primary/10 rounded-lg">
-                        Get a Free Quote
-                    </a>
-                </div>
-            </div>
-
             <div className="p-4 border-t border-border/50">
                 <button
                     onClick={handleLogout}
@@ -70,6 +64,6 @@ export function Sidebar() {
                     Sign Out
                 </button>
             </div>
-        </div >
+        </div>
     )
 }

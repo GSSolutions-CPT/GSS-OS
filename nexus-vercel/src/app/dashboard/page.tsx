@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { PlusCircle, Search } from 'lucide-react'
+import { PlusCircle, Search, Car } from 'lucide-react'
 import Link from 'next/link'
 import { QRCodeDisplay } from '@/components/QRCodeDisplay'
+import { RevokeButton } from './RevokeButton'
 
 export default async function DashboardPage() {
     const supabase = await createClient()
@@ -50,8 +51,8 @@ export default async function DashboardPage() {
                             <tr>
                                 <th className="px-6 py-4 font-medium">Visitor Name</th>
                                 <th className="px-6 py-4 font-medium">Access Date</th>
-                                <th className="px-6 py-4 font-medium">Credential</th>
-                                <th className="px-6 py-4 font-medium text-right">QR Code</th>
+                                <th className="px-6 py-4 font-medium">Details</th>
+                                <th className="px-6 py-4 font-medium text-right">Pass</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -77,12 +78,30 @@ export default async function DashboardPage() {
                                             })}
                                         </td>
                                         <td className="px-6 py-4">
-                                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary border border-primary/20">
-                                                {visitor.credential_number}
-                                            </span>
+                                            <div className="flex flex-col gap-1.5 items-start">
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${visitor.status === 'active' ? 'bg-green-500/10 text-green-500' :
+                                                    visitor.status === 'revoked' ? 'bg-destructive/10 text-destructive' :
+                                                        'bg-secondary text-muted-foreground'
+                                                    }`}>
+                                                    {visitor.status}
+                                                </span>
+                                                <div className="text-xs text-muted-foreground flex items-center gap-1 font-mono">
+                                                    PIN: <span className="text-foreground">{visitor.pin_code || 'N/A'}</span>
+                                                </div>
+                                                {visitor.needs_parking && (
+                                                    <div className="text-xs text-primary flex items-center gap-1">
+                                                        <Car className="h-3 w-3" /> Parking Req
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <QRCodeDisplay value={visitor.credential_number.toString()} size={40} />
+                                        <td className="px-6 py-4 flex items-center justify-end gap-4">
+                                            {visitor.status === 'active' && (
+                                                <RevokeButton visitorId={visitor.id} />
+                                            )}
+                                            <div className={visitor.status !== 'active' ? 'opacity-30 grayscale pointer-events-none' : ''}>
+                                                <QRCodeDisplay value={visitor.credential_number.toString()} size={40} />
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
