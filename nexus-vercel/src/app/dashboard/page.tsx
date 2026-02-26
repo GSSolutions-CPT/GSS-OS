@@ -3,6 +3,7 @@ import { PlusCircle, Search, Car } from 'lucide-react'
 import Link from 'next/link'
 import { QRCodeDisplay } from '@/components/QRCodeDisplay'
 import { RevokeButton } from './RevokeButton'
+import { ResendButton } from './ResendButton'
 
 export default async function DashboardPage() {
     const supabase = await createClient()
@@ -97,7 +98,10 @@ export default async function DashboardPage() {
                                         </td>
                                         <td className="px-6 py-4 flex items-center justify-end gap-4">
                                             {visitor.status === 'active' && (
-                                                <RevokeButton visitorId={visitor.id} />
+                                                <div className="flex flex-col gap-2 items-end">
+                                                    <ResendButton visitorId={visitor.id} />
+                                                    <RevokeButton visitorId={visitor.id} />
+                                                </div>
                                             )}
                                             <div className={visitor.status !== 'active' ? 'opacity-30 grayscale pointer-events-none' : ''}>
                                                 <QRCodeDisplay value={visitor.credential_number.toString()} size={40} />

@@ -118,23 +118,28 @@ export default function GuardDashboardPage() {
                             <Search className="h-4 w-4 text-muted-foreground" />
                         </div>
                         <div className="space-y-3 flex-1 overflow-y-auto pr-2">
-                            {/* Mock upcoming visitors */}
-                            <div className="p-3 border border-border/30 rounded-lg bg-background/50 flex justify-between items-center">
-                                <div>
-                                    <div className="text-sm font-semibold">Sarah Jenkins</div>
-                                    <div className="text-xs text-muted-foreground">Visiting: Unit 102</div>
+                            {/* Mock Data */}
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="bg-background/50 rounded-xl p-3 border border-border flex items-center justify-between">
+                                    <div>
+                                        <div className="font-medium text-sm text-foreground">Guest Name {i}</div>
+                                        <div className="text-xs text-muted-foreground">Unit {300 + i} • 14:00</div>
+                                    </div>
+                                    <div className="text-[10px] uppercase font-bold text-primary bg-primary/10 px-2 py-0.5 rounded tracking-wider">
+                                        Expected
+                                    </div>
                                 </div>
-                                <span className="text-[10px] uppercase bg-secondary px-2 py-1 rounded text-muted-foreground font-semibold">Expected</span>
-                            </div>
-                            <div className="p-3 border border-border/30 rounded-lg bg-background/50 flex justify-between items-center">
-                                <div>
-                                    <div className="text-sm font-semibold">Uber Eats Delivery</div>
-                                    <div className="text-xs text-muted-foreground">Visiting: Unit 40B</div>
-                                </div>
-                                <span className="text-[10px] uppercase bg-green-500/10 text-green-500 px-2 py-1 rounded font-semibold border border-green-500/20">Checked In</span>
-                            </div>
+                            ))}
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <div className="flex items-start gap-4 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive/80 mt-8 max-w-2xl mx-auto">
+                <AlertCircle className="h-5 w-5 shrink-0 mt-0.5" />
+                <div className="text-sm">
+                    <p className="font-semibold text-destructive">Strict Anti-Passback Enforced</p>
+                    <p className="mt-1">Credentials are single-use per directional scan. Screenshots passed to outside guests will be rejected at the turnstile automatically by the Impro logic controller.</p>
                 </div>
             </div>
         </div>

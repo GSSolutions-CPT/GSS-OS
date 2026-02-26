@@ -21,10 +21,13 @@ export async function inviteVisitor(formData: FormData) {
         return { error: 'Name and Access Date are required.' }
     }
 
-    // Fetch user's profile to get unit_id
+    // Fetch user's profile to get unit_id & type 
     const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('unit_id')
+        .select(`
+            unit_id,
+            units (type)
+        `)
         .eq('id', user.id)
         .single()
 
@@ -84,6 +87,8 @@ export async function inviteVisitor(formData: FormData) {
                     credential_number: credentialNumber,
                     visitor_name: name,
                     access_date: date,
+                    tag_type: 15,
+                    lift_access_level: Array.isArray(profile.units) ? profile.units[0]?.type : (profile.units as Record<string, unknown>)?.type === 'commercial' ? 'commercial' : 'residential'
                 })
             })
 

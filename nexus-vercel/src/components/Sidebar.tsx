@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ShieldCheck, Users, PlusCircle, LogOut } from 'lucide-react'
+import { ShieldCheck, Users, PlusCircle, LogOut, SmartphoneNfc } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
@@ -14,6 +14,7 @@ export function Sidebar() {
     const links = [
         { name: 'Visitors', href: '/dashboard', icon: Users },
         { name: 'Invite', href: '/dashboard/invite', icon: PlusCircle },
+        { name: 'STid Request', href: '/dashboard/stid', icon: SmartphoneNfc },
     ]
 
     async function handleLogout() {
