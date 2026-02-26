@@ -1,0 +1,32 @@
+# Prompt Requirements
+
+1. Global Security Solutions Branding & Marketing
+• Brand Theming: The entire Next.js portal is themed in your dark navy and glowing light-blue colors, featuring your shield logo on the login screen.
+• Admin Watermark: A persistent footer on all dashboards: "System engineered and maintained by Global Security Solutions | 24/7 Support: 062 955 8559".
+• Dashboard Upsell Widget: A permanent sidebar on the Group Admin dashboard advertising your AJAX alarms, Hikvision CCTV, and load-shedding solutions to the unit owners.
+• Guest Ad Banner: A clickable banner under the guest's QR code stating: "🔒 This Premises is Secured by Global Security Solutions - Cape Town's #1 Rated Installer," linking to your website.
+2. The Super Admin Panel (Body Corporate)
+• Unit & Role Creation: The ability to create the 26 units (14 businesses, 12 residential) and assign a "Group Admin" login to each.
+• Site Capacity Tracker: A visual warning system monitoring how many of the Impro SLP935 software's "Sites" have been used, preventing the system from hitting hard limits.
+• Global Audit Logs: A master view of all visitor traffic across the entire building, with a button to Export to CSV/PDF for security incidents.
+• Community Announcements: A broadcast tool to send messages (e.g., "Lift maintenance tomorrow") to all 26 Group Admins.
+• Tunnel Health Monitor: A Red/Green light indicator showing if the cloud app is successfully communicating with the local on-premise Impro i3 PC.
+3. The Group Admin Dashboard (Unit Owners)
+• Single & Bulk Invites: A form to invite a single guest (with a "Needs Parking?" checkbox), plus a CSV upload button to generate bulk invites for business meetings.
+• Unit-Specific Audit Logs: A private view where owners only see the entry/exit history of their specific guests.
+• Access Management Controls: Buttons to instantly Revoke/Cancel a guest's pass early, or Resend/Refresh the welcome link if a guest loses their SMS/email.
+• Long-Term Credential Requests: A form for owners to request permanent STid mobile Bluetooth credentials for new long-term tenants or staff.
+4. The Guard Dashboard (Underground Parking)
+• Filtered Parking Roster: A read-only screen showing only today's expected visitors who checked the "Needs Parking" box.
+• Manual Boom Gate Override: A button to manually log a guest in and trigger the Impro relay to open the parking gate if their phone dies.
+• Quick-Call Directory: A built-in digital phonebook so the guard can instantly call a specific apartment or business to approve an unannounced delivery driver.
+5. The Guest Experience (Mobile Web App)
+• Dynamic QR Code Generation: The app generates a unique random number converted into a QR code, formatted perfectly to act as a Wiegand string for the ZKTeco QR600HK readers.
+• The Digital Guidebook: The QR code sits on a mobile page that also displays the unit's Check-in/Check-out times, House Rules, and the Wi-Fi password.
+• Backup PIN Code: The page provides a fallback numeric PIN that guests can type into the QR600HK keypad if their screen is cracked or won't scan.
+6. Behind-the-Scenes Hardware & Network Logic
+• API Credential Pushing: The Next.js backend automatically pushes the newly generated QR string via the Impro API into the TAG_CODE field as tag type 15.
+• Automated Expiration: The system automatically revokes the credential via the API the minute the guest's booking ends.
+• API Retry Queue: If the building's internet tunnel drops, the Supabase database queues the newly generated QR codes and pushes them to the Impro hardware the second the internet reconnects.
+• Anti-Passback / Single-Use Logic: The system strictly prevents a guest from scanning their QR code, walking in, and passing a screenshot of it to a friend outside.
+• Lift Segregation: Automated logic ensuring an Airbnb guest's code only unlocks the lift for their specific residential floor, restricting them from commercial levels.
