@@ -1,0 +1,329 @@
+﻿node.exe : Vercel CLI 50.15.1
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\User\AppData\Roaming\n ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Vercel CLI 50.15.1:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Retrieving projectΓÇª
+Deploying kyles-projects-1a3e7e0d/nexus-vercel
+Uploading [--------------------] (0.0B/72.7KB)
+Uploading [=========-----------] (32.8KB/72.7KB)
+Uploading [===========---------] (40.8KB/72.7KB)
+Uploading [===============-----] (56.8KB/72.7KB)
+Uploading [====================] (72.7KB/72.7KB)
+Inspect: https://vercel.com/kyles-projects-1a3e7e0d/nexus-vercel/FjUXETLDtrrt2919mnMPxCtoL4tk [7s]
+Production: https://nexus-vercel-ja579adi5-kyles-projects-1a3e7e0d.vercel.app [7s]
+Building...
+Building...
+Building: Running build in Washington, D.C., USA (East) ΓÇô iad1
+Building: Build machine configuration: 2 cores, 8 GB
+Building: Retrieving list of deployment files...
+Building: Downloading 133 deployment files...
+Building: Restored build cache from previous deployment (7M74JTLQWXfHPi7J9HT1Hnjjaoi4)
+Building: Running "vercel build"
+Building: Vercel CLI 50.23.2
+Building: Installing dependencies...
+Building: added 1 package in 3s
+Building: 150 packages are looking for funding
+Building: run `npm fund` for details
+Building: Detected Next.js version: 16.1.6
+Building: Running "npm run build"
+Building: > nexus-vercel@0.1.0 build
+Building: > next build
+Building: ΓÜá `eslint` configuration in next.config.js is no longer supported. See more info here: 
+https://nextjs.org/docs/app/api-reference/cli/next#next-lint-options
+Building: ΓÜá Invalid next.config.js options detected:
+Building: ΓÜá     Unrecognized key(s) in object: 'eslint'
+Building: ΓÜá See more info here: https://nextjs.org/docs/messages/invalid-next-config
+Building: Γû▓ Next.js 16.1.6 (Turbopack)
+Building: ΓÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: 
+https://nextjs.org/docs/messages/middleware-to-proxy
+Building: Creating an optimized production build ...
+2026-02-27T09:56:51.325Z  Running build in Washington, D.C., USA (East) ΓÇô iad1
+2026-02-27T09:56:51.325Z  Build machine configuration: 2 cores, 8 GB
+2026-02-27T09:56:51.573Z  Retrieving list of deployment files...
+2026-02-27T09:56:52.162Z  Downloading 133 deployment files...
+2026-02-27T09:56:53.909Z  Restored build cache from previous deployment (7M74JTLQWXfHPi7J9HT1Hnjjaoi4)
+2026-02-27T09:56:54.868Z  Running "vercel build"
+2026-02-27T09:56:55.467Z  Vercel CLI 50.23.2
+2026-02-27T09:56:55.792Z  Installing dependencies...
+2026-02-27T09:56:59.041Z  
+2026-02-27T09:56:59.042Z  added 1 package in 3s
+2026-02-27T09:56:59.043Z  
+2026-02-27T09:56:59.043Z  150 packages are looking for funding
+2026-02-27T09:56:59.043Z  run `npm fund` for details
+2026-02-27T09:56:59.080Z  Detected Next.js version: 16.1.6
+2026-02-27T09:56:59.084Z  Running "npm run build"
+2026-02-27T09:56:59.229Z  
+2026-02-27T09:56:59.229Z  > nexus-vercel@0.1.0 build
+2026-02-27T09:56:59.229Z  > next build
+2026-02-27T09:56:59.229Z  
+2026-02-27T09:57:00.152Z  ΓÜá `eslint` configuration in next.config.js is no longer supported. See more info here: 
+https://nextjs.org/docs/app/api-reference/cli/next#next-lint-options
+2026-02-27T09:57:00.157Z  ΓÜá Invalid next.config.js options detected:
+2026-02-27T09:57:00.158Z  ΓÜá     Unrecognized key(s) in object: 'eslint'
+2026-02-27T09:57:00.158Z  ΓÜá See more info here: https://nextjs.org/docs/messages/invalid-next-config
+2026-02-27T09:57:00.217Z  Γû▓ Next.js 16.1.6 (Turbopack)
+2026-02-27T09:57:00.218Z  
+2026-02-27T09:57:00.225Z  ΓÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: 
+https://nextjs.org/docs/messages/middleware-to-proxy
+2026-02-27T09:57:00.253Z  Creating an optimized production build ...
+2026-02-27T09:57:09.849Z  
+2026-02-27T09:57:09.850Z  > Build error occurred
+2026-02-27T09:57:09.854Z  Error: Turbopack build failed with 14 errors:
+2026-02-27T09:57:09.855Z  ./src/components/GuardSidebar.tsx:12:1
+2026-02-27T09:57:09.855Z  Module not found: Can't resolve '@/lib/supabase/client'
+2026-02-27T09:57:09.855Z  10 |     ShieldCheck
+2026-02-27T09:57:09.855Z  11 | } from 'lucide-react'
+2026-02-27T09:57:09.855Z  > 12 | import { createClient } from '@/lib/supabase/client'
+2026-02-27T09:57:09.856Z  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T09:57:09.856Z  13 | import { useRouter } from 'next/navigation'
+2026-02-27T09:57:09.856Z  14 |
+2026-02-27T09:57:09.856Z  15 | const navItems = [
+2026-02-27T09:57:09.856Z  
+2026-02-27T09:57:09.856Z  Import map: aliased to relative './src/lib/supabase/client' inside of [project]/
+2026-02-27T09:57:09.856Z  
+2026-02-27T09:57:09.856Z  
+2026-02-27T09:57:09.856Z  Import trace:
+2026-02-27T09:57:09.856Z  Server Component:
+2026-02-27T09:57:09.856Z  ./src/components/GuardSidebar.tsx
+2026-02-27T09:57:09.857Z  ./src/app/guard/layout.tsx
+2026-02-27T09:57:09.857Z  
+2026-02-27T09:57:09.857Z  https://nextjs.org/docs/messages/module-not-found
+2026-02-27T09:57:09.857Z  
+2026-02-27T09:57:09.857Z  
+2026-02-27T09:57:09.857Z  ./src/components/Sidebar.tsx:6:1
+2026-02-27T09:57:09.857Z  Module not found: Can't resolve '@/lib/supabase/client'
+2026-02-27T09:57:09.857Z  4 | import { usePathname } from 'next/navigation'
+2026-02-27T09:57:09.857Z  5 | import { Users, PlusCircle, LogOut, SmartphoneNfc } from 'lucide-react'
+2026-02-27T09:57:09.857Z  > 6 | import { createClient } from '@/lib/supabase/client'
+2026-02-27T09:57:09.858Z  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T09:57:09.861Z  7 | import { useRouter } from 'next/navigation'
+2026-02-27T09:57:09.861Z  8 | import Image from 'next/image'
+2026-02-27T09:57:09.861Z  9 |
+2026-02-27T09:57:09.861Z  
+2026-02-27T09:57:09.862Z  Import map: aliased to relative './src/lib/supabase/client' inside of [project]/
+2026-02-27T09:57:09.862Z  
+2026-02-27T09:57:09.862Z  
+2026-02-27T09:57:09.862Z  Import trace:
+2026-02-27T09:57:09.862Z  Server Component:
+2026-02-27T09:57:09.862Z  ./src/components/Sidebar.tsx
+2026-02-27T09:57:09.863Z  ./src/app/dashboard/layout.tsx
+2026-02-27T09:57:09.863Z  
+2026-02-27T09:57:09.863Z  https://nextjs.org/docs/messages/module-not-found
+2026-02-27T09:57:09.863Z  
+2026-02-27T09:57:09.863Z  
+2026-02-27T09:57:09.863Z  ./src/components/SuperAdminSidebar.tsx:6:1
+2026-02-27T09:57:09.863Z  Module not found: Can't resolve '@/lib/supabase/client'
+2026-02-27T09:57:09.863Z  4 | import { usePathname } from 'next/navigation'
+2026-02-27T09:57:09.863Z  5 | import { ShieldCheck, Activity, Building, ScrollText, Megaphone, LogOut } from 
+'lucide-react'
+2026-02-27T09:57:09.863Z  > 6 | import { createClient } from '@/lib/supabase/client'
+2026-02-27T09:57:09.863Z  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T09:57:09.863Z  7 | import { useRouter } from 'next/navigation'
+2026-02-27T09:57:09.863Z  8 |
+2026-02-27T09:57:09.863Z  9 | export function SuperAdminSidebar() {
+2026-02-27T09:57:09.863Z  
+2026-02-27T09:57:09.863Z  Import map: aliased to relative './src/lib/supabase/client' inside of [project]/
+2026-02-27T09:57:09.863Z  
+2026-02-27T09:57:09.863Z  
+2026-02-27T09:57:09.863Z  Import trace:
+2026-02-27T09:57:09.863Z  Server Component:
+2026-02-27T09:57:09.863Z  ./src/components/SuperAdminSidebar.tsx
+2026-02-27T09:57:09.863Z  ./src/app/super-admin/layout.tsx
+2026-02-27T09:57:09.863Z  
+2026-02-27T09:57:09.864Z  https://nextjs.org/docs/messages/module-not-found
+2026-02-27T09:57:09.864Z  
+2026-02-27T09:57:09.864Z  
+2026-02-27T09:57:09.864Z  ./src/middleware.ts:2:1
+2026-02-27T09:57:09.864Z  Module not found: Can't resolve '@/lib/supabase/middleware'
+2026-02-27T09:57:09.864Z  1 | import { type NextRequest } from 'next/server'
+2026-02-27T09:57:09.864Z  > 2 | import { updateSession } from '@/lib/supabase/middleware'
+2026-02-27T09:57:09.864Z  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T09:57:09.864Z  3 |
+2026-02-27T09:57:09.864Z  4 | export async function middleware(request: NextRequest) {
+2026-02-27T09:57:09.864Z  5 |     return await updateSession(request)
+2026-02-27T09:57:09.864Z  
+2026-02-27T09:57:09.864Z  Import map: aliased to relative './src/lib/supabase/middleware' inside of [project]/
+2026-02-27T09:57:09.864Z  
+2026-02-27T09:57:09.864Z  
+2026-02-27T09:57:09.864Z  https://nextjs.org/docs/messages/module-not-found
+2026-02-27T09:57:09.864Z  
+2026-02-27T09:57:09.864Z  
+2026-02-27T09:57:09.864Z  ./src/app/dashboard/actions.ts:3:1
+2026-02-27T09:57:09.864Z  Module not found: Can't resolve '@/lib/supabase/server'
+2026-02-27T09:57:09.864Z  1 | 'use server'
+2026-02-27T09:57:09.864Z  2 |
+2026-02-27T09:57:09.865Z  > 3 | import { createClient } from '@/lib/supabase/server'
+2026-02-27T09:57:09.865Z  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T09:57:09.865Z  4 | import { revalidatePath } from 'next/cache'
+2026-02-27T09:57:09.865Z  5 |
+2026-02-27T09:57:09.865Z  6 | export async function revokeVisitor(visitorId: string) {
+2026-02-27T09:57:09.865Z  
+2026-02-27T09:57:09.865Z  Import map: aliased to relative './src/lib/supabase/server' inside of [project]/
+2026-02-27T09:57:09.865Z  
+2026-02-27T09:57:09.865Z  
+2026-02-27T09:57:09.865Z  https://nextjs.org/docs/messages/module-not-found
+2026-02-27T09:57:09.865Z  
+2026-02-27T09:57:09.865Z  
+2026-02-27T09:57:09.865Z  ./src/app/dashboard/invite/actions.ts:3:1
+2026-02-27T09:57:09.865Z  Module not found: Can't resolve '@/lib/supabase/server'
+2026-02-27T09:57:09.865Z  1 | 'use server'
+2026-02-27T09:57:09.865Z  2 |
+2026-02-27T09:57:09.865Z  > 3 | import { createClient } from '@/lib/supabase/server'
+2026-02-27T09:57:09.865Z  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T09:57:09.865Z  4 | import { revalidatePath } from 'next/cache'
+2026-02-27T09:57:09.865Z  5 | import { redirect } from 'next/navigation'
+2026-02-27T09:57:09.866Z  6 |
+2026-02-27T09:57:09.866Z  
+2026-02-27T09:57:09.866Z  Import map: aliased to relative './src/lib/supabase/server' inside of [project]/
+2026-02-27T09:57:09.866Z  
+2026-02-27T09:57:09.866Z  
+2026-02-27T09:57:09.866Z  https://nextjs.org/docs/messages/module-not-found
+2026-02-27T09:57:09.866Z  
+2026-02-27T09:57:09.866Z  
+2026-02-27T09:57:09.866Z  ./src/app/dashboard/page.tsx:1:1
+2026-02-27T09:57:09.866Z  Module not found: Can't resolve '@/lib/supabase/server'
+2026-02-27T09:57:09.866Z  > 1 | import { createClient } from '@/lib/supabase/server'
+2026-02-27T09:57:09.866Z  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T09:57:09.866Z  2 | import { PlusCircle, Search, Car } from 'lucide-react'
+2026-02-27T09:57:09.866Z  3 | import Link from 'next/link'
+2026-02-27T09:57:09.866Z  4 | import { QRCodeDisplay } from '@/components/QRCodeDisplay'
+2026-02-27T09:57:09.866Z  
+2026-02-27T09:57:09.867Z  Import map: aliased to relative './src/lib/supabase/server' inside of [project]/
+2026-02-27T09:57:09.867Z  
+2026-02-27T09:57:09.867Z  
+2026-02-27T09:57:09.867Z  https://nextjs.org/docs/messages/module-not-found
+2026-02-27T09:57:09.867Z  
+2026-02-27T09:57:09.867Z  
+2026-02-27T09:57:09.867Z  ./src/app/guard/directory/page.tsx:1:1
+2026-02-27T09:57:09.867Z  Module not found: Can't resolve '@/lib/supabase/server'
+2026-02-27T09:57:09.867Z  > 1 | import { createClient } from '@/lib/supabase/server'
+2026-02-27T09:57:09.867Z  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T09:57:09.867Z  2 | import { PhoneCall, Search, Hash, Building2 } from 'lucide-react'
+2026-02-27T09:57:09.868Z  3 |
+2026-02-27T09:57:09.868Z  4 | export default async function GuardDirectoryPage() {
+2026-02-27T09:57:09.868Z  
+2026-02-27T09:57:09.868Z  Import map: aliased to relative './src/lib/supabase/server' inside of [project]/
+2026-02-27T09:57:09.868Z  
+2026-02-27T09:57:09.868Z  
+2026-02-27T09:57:09.868Z  https://nextjs.org/docs/messages/module-not-found
+2026-02-27T09:57:09.868Z  
+2026-02-27T09:57:09.868Z  
+2026-02-27T09:57:09.869Z  ./src/app/guard/parking/page.tsx:1:1
+2026-02-27T09:57:09.869Z  Module not found: Can't resolve '@/lib/supabase/server'
+2026-02-27T09:57:09.869Z  > 1 | import { createClient } from '@/lib/supabase/server'
+2026-02-27T09:57:09.869Z  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T09:57:09.869Z  2 | import { CarFront, Clock, User, Hash } from 'lucide-react'
+2026-02-27T09:57:09.870Z  3 |
+2026-02-27T09:57:09.870Z  4 | export default async function GuardParkingPage() {
+2026-02-27T09:57:09.870Z  
+2026-02-27T09:57:09.870Z  Import map: aliased to relative './src/lib/supabase/server' inside of [project]/
+2026-02-27T09:57:09.870Z  
+2026-02-27T09:57:09.871Z  
+2026-02-27T09:57:09.871Z  https://nextjs.org/docs/messages/module-not-found
+2026-02-27T09:57:09.871Z  
+2026-02-27T09:57:09.871Z  
+2026-02-27T09:57:09.871Z  ./src/app/guest/[id]/page.tsx:1:1
+2026-02-27T09:57:09.871Z  Module not found: Can't resolve '@/lib/supabase/server'
+2026-02-27T09:57:09.871Z  > 1 | import { createClient } from '@/lib/supabase/server'
+2026-02-27T09:57:09.872Z  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T09:57:09.872Z  2 | import { notFound } from 'next/navigation'
+2026-02-27T09:57:09.872Z  3 | import { QRCodeDisplay } from '@/components/QRCodeDisplay'
+2026-02-27T09:57:09.872Z  4 | import { GuestAdBanner } from '@/components/GuestAdBanner'
+2026-02-27T09:57:09.872Z  
+2026-02-27T09:57:09.872Z  Import map: aliased to relative './src/lib/supabase/server' inside of [project]/
+2026-02-27T09:57:09.872Z  
+2026-02-27T09:57:09.873Z  
+2026-02-27T09:57:09.873Z  https://nextjs.org/docs/messages/module-not-found
+2026-02-27T09:57:09.873Z  
+2026-02-27T09:57:09.877Z  
+2026-02-27T09:57:09.877Z  ./src/app/login/actions.ts:5:1
+2026-02-27T09:57:09.877Z  Module not found: Can't resolve '@/lib/supabase/server'
+2026-02-27T09:57:09.877Z  3 | import { revalidatePath } from 'next/cache'
+2026-02-27T09:57:09.877Z  4 | import { redirect } from 'next/navigation'
+2026-02-27T09:57:09.877Z  > 5 | import { createClient } from '@/lib/supabase/server'
+2026-02-27T09:57:09.877Z  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T09:57:09.877Z  6 |
+2026-02-27T09:57:09.877Z  7 | export async function login(formData: FormData) {
+2026-02-27T09:57:09.877Z  8 |     const supabase = await createClient()
+2026-02-27T09:57:09.878Z  
+2026-02-27T09:57:09.878Z  Import map: aliased to relative './src/lib/supabase/server' inside of [project]/
+2026-02-27T09:57:09.878Z  
+2026-02-27T09:57:09.878Z  
+2026-02-27T09:57:09.878Z  https://nextjs.org/docs/messages/module-not-found
+2026-02-27T09:57:09.878Z  
+2026-02-27T09:57:09.878Z  
+2026-02-27T09:57:09.878Z  ./src/app/super-admin/announcements/page.tsx:1:1
+2026-02-27T09:57:09.878Z  Module not found: Can't resolve '@/lib/supabase/server'
+2026-02-27T09:57:09.878Z  > 1 | import { createClient } from '@/lib/supabase/server'
+2026-02-27T09:57:09.878Z  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T09:57:09.878Z  2 | import { Megaphone, Send, Clock, Trash2 } from 'lucide-react'
+2026-02-27T09:57:09.878Z  3 | import { revalidatePath } from 'next/cache'
+2026-02-27T09:57:09.878Z  4 | import { formatDistanceToNow } from 'date-fns'
+2026-02-27T09:57:09.878Z  
+2026-02-27T09:57:09.878Z  Import map: aliased to relative './src/lib/supabase/server' inside of [project]/
+2026-02-27T09:57:09.878Z  
+2026-02-27T09:57:09.878Z  
+2026-02-27T09:57:09.878Z  https://nextjs.org/docs/messages/module-not-found
+2026-02-27T09:57:09.878Z  
+2026-02-27T09:57:09.878Z  
+2026-02-27T09:57:09.878Z  ./src/app/super-admin/logs/page.tsx:1:1
+2026-02-27T09:57:09.878Z  Module not found: Can't resolve '@/lib/supabase/server'
+2026-02-27T09:57:09.878Z  > 1 | import { createClient } from '@/lib/supabase/server'
+2026-02-27T09:57:09.878Z  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T09:57:09.878Z  2 | import { ScrollText, Download, Calendar, Activity, User, Key } from 'lucide-react'
+2026-02-27T09:57:09.878Z  3 | import { format } from 'date-fns'
+2026-02-27T09:57:09.878Z  4 |
+2026-02-27T09:57:09.878Z  
+2026-02-27T09:57:09.878Z  Import map: aliased to relative './src/lib/supabase/server' inside of [project]/
+2026-02-27T09:57:09.879Z  
+2026-02-27T09:57:09.879Z  
+2026-02-27T09:57:09.879Z  https://nextjs.org/docs/messages/module-not-found
+2026-02-27T09:57:09.879Z  
+2026-02-27T09:57:09.879Z  
+2026-02-27T09:57:09.879Z  ./src/app/super-admin/units/page.tsx:1:1
+2026-02-27T09:57:09.879Z  Module not found: Can't resolve '@/lib/supabase/server'
+2026-02-27T09:57:09.879Z  > 1 | import { createClient } from '@/lib/supabase/server'
+2026-02-27T09:57:09.879Z  | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2026-02-27T09:57:09.879Z  2 | import { Building, Plus, Users, Search } from 'lucide-react'
+2026-02-27T09:57:09.879Z  3 | import { revalidatePath } from 'next/cache'
+2026-02-27T09:57:09.879Z  4 |
+2026-02-27T09:57:09.879Z  
+2026-02-27T09:57:09.879Z  Import map: aliased to relative './src/lib/supabase/server' inside of [project]/
+2026-02-27T09:57:09.879Z  
+2026-02-27T09:57:09.879Z  
+2026-02-27T09:57:09.879Z  https://nextjs.org/docs/messages/module-not-found
+2026-02-27T09:57:09.879Z  
+2026-02-27T09:57:09.879Z  
+2026-02-27T09:57:09.879Z  at <unknown> (./src/components/GuardSidebar.tsx:12:1)
+2026-02-27T09:57:09.879Z  at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+2026-02-27T09:57:09.879Z  at <unknown> (./src/components/Sidebar.tsx:6:1)
+2026-02-27T09:57:09.879Z  at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+2026-02-27T09:57:09.879Z  at <unknown> (./src/components/SuperAdminSidebar.tsx:6:1)
+2026-02-27T09:57:09.879Z  at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+2026-02-27T09:57:09.879Z  at <unknown> (./src/middleware.ts:2:1)
+2026-02-27T09:57:09.879Z  at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+2026-02-27T09:57:09.879Z  at <unknown> (./src/app/dashboard/actions.ts:3:1)
+2026-02-27T09:57:09.879Z  at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+2026-02-27T09:57:09.879Z  at <unknown> (./src/app/dashboard/invite/actions.ts:3:1)
+2026-02-27T09:57:09.879Z  at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+2026-02-27T09:57:09.880Z  at <unknown> (./src/app/dashboard/page.tsx:1:1)
+2026-02-27T09:57:09.880Z  at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+2026-02-27T09:57:09.880Z  at <unknown> (./src/app/guard/directory/page.tsx:1:1)
+2026-02-27T09:57:09.880Z  at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+2026-02-27T09:57:09.880Z  at <unknown> (./src/app/guard/parking/page.tsx:1:1)
+2026-02-27T09:57:09.880Z  at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+2026-02-27T09:57:09.880Z  at <unknown> (./src/app/guest/[id]/page.tsx:1:1)
+2026-02-27T09:57:09.880Z  at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+2026-02-27T09:57:09.880Z  at <unknown> (./src/app/login/actions.ts:5:1)
+2026-02-27T09:57:09.880Z  at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+2026-02-27T09:57:09.880Z  at <unknown> (./src/app/super-admin/announcements/page.tsx:1:1)
+2026-02-27T09:57:09.880Z  at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+2026-02-27T09:57:09.880Z  at <unknown> (./src/app/super-admin/logs/page.tsx:1:1)
+2026-02-27T09:57:09.880Z  at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+2026-02-27T09:57:09.880Z  at <unknown> (./src/app/super-admin/units/page.tsx:1:1)
+2026-02-27T09:57:09.880Z  at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+2026-02-27T09:57:09.933Z  Error: Command "npm run build" exited with 1
+https://nexus-vercel-ja579adi5-kyles-projects-1a3e7e0d.vercel.app
