@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 import "./globals.css";
 
 export const dynamic = "force-dynamic";
@@ -14,9 +15,22 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+export const viewport: Viewport = {
+  themeColor: "#0ez5e9",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
+
 export const metadata: Metadata = {
   title: "Nexus Vercel | Visitor Management",
   description: "Premium visitor, credential, and access management dashboard.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Nexus",
+  },
 };
 
 export default function RootLayout({
@@ -30,6 +44,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <PWAInstallPrompt />
       </body>
     </html>
   );
