@@ -12,6 +12,11 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Legacy blocks ignoring non-migrated code
+    "app/**",
+    "scripts/**",
+    "supabase/**",
+    "lib/**"
   ]),
 ]);
 

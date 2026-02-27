@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { login } from './actions'
-import { ShieldCheck, Loader2 } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
+import Image from 'next/image'
 
 export default function LoginPage() {
     const [error, setError] = useState<string | null>(null)
@@ -23,15 +24,15 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen w-full flex items-center justify-center p-4 bg-background relative overflow-hidden">
-            {/* Decorative background blurs */}
+            {/* Decorative background blurs using new theme colors */}
             <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
             <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-blue-500/10 rounded-full blur-[120px] pointer-events-none" />
 
             <main className="w-full max-w-md">
-                <div className="glass-card rounded-2xl p-8 relative flex flex-col items-center">
+                <div className="glass-card rounded-2xl p-8 relative flex flex-col items-center border-border/50">
 
-                    <div className="h-16 w-16 bg-primary/10 rounded-2xl flex items-center justify-center mb-6 border border-primary/20 shadow-[0_0_15px_rgba(250,204,21,0.2)]">
-                        <ShieldCheck className="h-8 w-8 text-primary" />
+                    <div className="h-20 w-auto flex items-center justify-center mb-6 drop-shadow-[0_0_15px_rgba(56,189,248,0.4)]">
+                        <Image src="/logo.svg" alt="Global Security Solutions" width={180} height={60} className="object-contain" priority />
                     </div>
 
                     <div className="text-center mb-8">
@@ -73,7 +74,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full py-3 mt-6 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-all shadow-[0_4px_14px_0_rgba(250,204,21,0.39)] hover:shadow-[0_6px_20px_rgba(250,204,21,0.23)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
+                            className="w-full py-3 mt-6 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-all shadow-[0_4px_14px_0_rgba(56,189,248,0.39)] hover:shadow-[0_6px_20px_rgba(56,189,248,0.23)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
                         >
                             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Authenticate securely'}
                         </button>

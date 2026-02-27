@@ -85,63 +85,72 @@ ALTER TABLE public.api_retry_queue ENABLE ROW LEVEL SECURITY;
 -- Super Admins can do everything. Everyone else can only view units.
 CREATE POLICY "Units are universally viewable" ON public.units FOR SELECT USING (true);
 CREATE POLICY "Super Admins can insert units" ON public.units FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = (select auth.uid()) AND role = 'super_admin')
 );
 CREATE POLICY "Super Admins can update units" ON public.units FOR UPDATE USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = (select auth.uid()) AND role = 'super_admin')
 );
 
 -- PROFILES RLS
 -- Everyone can select profiles (needed for lookups/foreign keys).
-CREATE POLICY "Profiles are viewable by authenticated users" ON public.profiles FOR SELECT USING (auth.role() = 'authenticated');
--- Users can update their own profiles
-CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid() = id);
--- Super admins can insert/update any profile
-CREATE POLICY "Super Admins can edit all profiles" ON public.profiles FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+CREATE POLICY "Profiles are viewable by authenticated users" ON public.profiles FOR SELECT USING ((select auth.role()) = 'authenticated');
+-- Users can update their own profiles or super admins can update all
+CREATE POLICY "Users and Super Admins can update profiles" ON public.profiles FOR UPDATE USING (
+  ((select auth.uid()) = id) OR EXISTS (SELECT 1 FROM public.profiles WHERE id = (select auth.uid()) AND role = 'super_admin')
+);
+-- Super admins can insert/delete any profile
+CREATE POLICY "Super Admins can insert profiles" ON public.profiles FOR INSERT WITH CHECK (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = (select auth.uid()) AND role = 'super_admin')
+);
+CREATE POLICY "Super Admins can delete profiles" ON public.profiles FOR DELETE USING (
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = (select auth.uid()) AND role = 'super_admin')
 );
 
 -- VISITORS RLS
 -- Super admins and Guards can view all visitors. Group Admins view only their unit's visitors.
 CREATE POLICY "Role-based visitor viewing" ON public.visitors FOR SELECT USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('super_admin', 'guard'))
-  OR owner_id = auth.uid()
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = (select auth.uid()) AND role IN ('super_admin', 'guard'))
+  OR owner_id = (select auth.uid())
 );
 -- Only Owners (Group Admins) and Super Admins can insert visitors
 CREATE POLICY "Owners can insert visitors" ON public.visitors FOR INSERT WITH CHECK (
-  auth.uid() = owner_id
+  (select auth.uid()) = owner_id
 );
 -- Owners can update their own visitors
 CREATE POLICY "Owners can update their own visitors" ON public.visitors FOR UPDATE USING (
-  auth.uid() = owner_id
+  (select auth.uid()) = owner_id
 );
 
 -- ANNOUNCEMENTS RLS
 -- Everyone can read announcements
-CREATE POLICY "Announcements are readable by all" ON public.announcements FOR SELECT USING (auth.role() = 'authenticated');
+CREATE POLICY "Announcements are readable by all" ON public.announcements FOR SELECT USING ((select auth.role()) = 'authenticated');
 -- Only Super Admins can insert announcements
 CREATE POLICY "Super Admins can create announcements" ON public.announcements FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = (select auth.uid()) AND role = 'super_admin')
 );
 
 -- AUDIT LOGS RLS
 -- Users can read logs where they are the actor. Super Admins can read all logs.
 CREATE POLICY "Super Admins can view all logs, Users view own" ON public.audit_logs FOR SELECT USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
-  OR actor_id = auth.uid()
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = (select auth.uid()) AND role = 'super_admin')
+  OR actor_id = (select auth.uid())
 );
--- Anyone can insert audit logs for tracing
-CREATE POLICY "Everyone can insert audit logs" ON public.audit_logs FOR INSERT WITH CHECK (true);
+-- Authenticated users can insert audit logs for tracing
+CREATE POLICY "Everyone can insert audit logs" ON public.audit_logs FOR INSERT WITH CHECK ((select auth.role()) = 'authenticated');
 
 -- API RETRY QUEUE RLS
 -- Handled mostly by backend/Supabase Edge Functions, but let's lock it to Super Admins and Service Roles
 CREATE POLICY "Super Admins can view retry queue" ON public.api_retry_queue FOR SELECT USING (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'super_admin')
+  EXISTS (SELECT 1 FROM public.profiles WHERE id = (select auth.uid()) AND role = 'super_admin')
 );
 
 -- 9. Automatic Profile Creation Trigger (on auth trigger)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS trigger AS $$
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
   INSERT INTO public.profiles (id, full_name, email, role)
   VALUES (
@@ -152,7 +161,7 @@ BEGIN
   );
   RETURN new;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 -- Trigger the function every time a user is created
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
@@ -165,3 +174,6 @@ CREATE INDEX IF NOT EXISTS visitors_owner_id_idx ON public.visitors(owner_id);
 CREATE INDEX IF NOT EXISTS visitors_unit_id_idx ON public.visitors(unit_id);
 CREATE INDEX IF NOT EXISTS visitors_access_date_idx ON public.visitors(access_date);
 CREATE INDEX IF NOT EXISTS audit_logs_actor_id_idx ON public.audit_logs(actor_id);
+CREATE INDEX IF NOT EXISTS announcements_author_id_idx ON public.announcements(author_id);
+CREATE INDEX IF NOT EXISTS api_retry_queue_visitor_id_idx ON public.api_retry_queue(visitor_id);
+CREATE INDEX IF NOT EXISTS profiles_unit_id_idx ON public.profiles(unit_id);

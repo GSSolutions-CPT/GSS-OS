@@ -5,30 +5,30 @@
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
 
   /* Premium Dark Theme Core Colors */
-  --color-background: #09090b; /* Zinc 950 */
-  --color-foreground: #fafafa; /* Zinc 50 */
+  --color-background: #020617; /* Slate 950 - Deep Navy */
+  --color-foreground: #f8fafc; /* Slate 50 */
   
-  --color-primary: #facc15; /* Yellow 400 for metallic gold accent */
-  --color-primary-foreground: #09090b;
+  --color-primary: #38bdf8; /* Sky 400 - Glowing Light-Blue */
+  --color-primary-foreground: #020617;
   
-  --color-card: #18181b; /* Zinc 900 */
-  --color-card-foreground: #fafafa;
+  --color-card: #0f172a; /* Slate 900 */
+  --color-card-foreground: #f8fafc;
   
-  --color-popover: #18181b;
-  --color-popover-foreground: #fafafa;
+  --color-popover: #0f172a;
+  --color-popover-foreground: #f8fafc;
   
-  --color-muted: #27272a; /* Zinc 800 */
-  --color-muted-foreground: #a1a1aa; /* Zinc 400 */
+  --color-muted: #1e293b; /* Slate 800 */
+  --color-muted-foreground: #94a3b8; /* Slate 400 */
   
-  --color-accent: #27272a;
-  --color-accent-foreground: #fafafa;
+  --color-accent: #1e293b;
+  --color-accent-foreground: #f8fafc;
 
   --color-destructive: #ef4444; /* Red 500 */
-  --color-destructive-foreground: #fafafa;
+  --color-destructive-foreground: #f8fafc;
   
-  --color-border: #27272a; /* Zinc 800 */
-  --color-input: #27272a;
-  --color-ring: #facc15;
+  --color-border: #1e293b; /* Slate 800 */
+  --color-input: #1e293b;
+  --color-ring: #38bdf8;
 }
 
 /* Base resets forcing dark mode premium feel */
