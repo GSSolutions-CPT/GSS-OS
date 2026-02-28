@@ -1,4 +1,5 @@
 import { Sidebar } from '@/components/Sidebar'
+import { GuestAdBanner } from '@/components/GuestAdBanner'
 
 export default function DashboardLayout({
     children,
@@ -22,6 +23,10 @@ export default function DashboardLayout({
                 <main className="flex-1 overflow-y-auto z-10 p-4 md:p-8 flex flex-col">
                     <div className="flex-1">
                         {children}
+                    </div>
+
+                    <div className="block md:hidden w-full max-w-md mx-auto mt-6">
+                        <GuestAdBanner />
                     </div>
                     <footer className="mt-8 pt-4 border-t border-border/50 text-center text-xs text-muted-foreground">
                         <p>System engineered and maintained by <span className="font-semibold text-primary">Global Security Solutions</span> | 24/7 Support: <a href="tel:0629558559" className="hover:text-primary transition-colors">062 955 8559</a></p>

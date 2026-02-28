@@ -1,4 +1,5 @@
 import { SuperAdminSidebar } from '@/components/SuperAdminSidebar'
+import { GuestAdBanner } from '@/components/GuestAdBanner'
 
 export default function SuperAdminLayout({
     children,
@@ -22,6 +23,10 @@ export default function SuperAdminLayout({
                 <main className="flex-1 overflow-y-auto z-10 p-4 md:p-8 flex flex-col">
                     <div className="flex-1">
                         {children}
+                    </div>
+
+                    <div className="block md:hidden w-full max-w-md mx-auto mt-6">
+                        <GuestAdBanner />
                     </div>
 
                     {/* Admin Watermark */}
