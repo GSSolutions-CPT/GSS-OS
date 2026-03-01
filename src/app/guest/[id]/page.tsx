@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { notFound } from 'next/navigation'
 import { QRCodeDisplay } from '@/components/QRCodeDisplay'
 import { GuestAdBanner } from '@/components/GuestAdBanner'
 import { Wifi, Clock, ShieldAlert, KeySquare } from 'lucide-react'
@@ -16,6 +17,8 @@ export default async function GuestPassPage({ params }: { params: Promise<{ id: 
         `)
         .eq('id', id)
         .single()
+
+    if (!visitor) notFound()
 
     const { data: settings } = await supabase
         .from('building_settings')
