@@ -8,20 +8,38 @@ export default function SuperAdminDashboard() {
     const [sitesUsed, setSitesUsed] = useState(1485)
     const MAX_SITES = 2000
 
-    const checkTunnelHealth = () => {
+    const checkTunnelHealth = async () => {
         setTunnelStatus('checking')
-        // Mock health check pointing to the on-prem Impro PC tunnel
-        setTimeout(() => {
-            // Fake 90% chance of online for UI demonstration
-            setTunnelStatus(Math.random() > 0.1 ? 'online' : 'offline')
-        }, 1500)
+        try {
+            const res = await fetch('/api/health')
+            const data = await res.json()
+            if (data.status === 'connected') {
+                setTunnelStatus('online')
+            } else {
+                setTunnelStatus('offline')
+            }
+        } catch (error) {
+            console.error('Failed to probe tunnel health', error)
+            setTunnelStatus('offline')
+        }
     }
 
     useEffect(() => {
-        // Since initial state is 'checking', we just set the timeout directly on mount
-        const timer = setTimeout(() => {
-            setTunnelStatus(Math.random() > 0.1 ? 'online' : 'offline')
-        }, 1500)
+        let mounted = true
+
+        const fetchHealth = async () => {
+            try {
+                const res = await fetch('/api/health')
+                const data = await res.json()
+                if (mounted) {
+                    setTunnelStatus(data.status === 'connected' ? 'online' : 'offline')
+                }
+            } catch (error) {
+                if (mounted) setTunnelStatus('offline')
+            }
+        }
+
+        fetchHealth()
 
         // Simulate minor site usage fluctuations
         const interval = setInterval(() => {
@@ -30,7 +48,7 @@ export default function SuperAdminDashboard() {
 
         return () => {
             clearInterval(interval)
-            clearTimeout(timer)
+            clearInterval(interval)
         }
     }, [])
 

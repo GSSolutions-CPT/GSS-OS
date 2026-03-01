@@ -1,0 +1,77 @@
+﻿node.exe : Vercel CLI 50.15.1
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\User\AppData\Roaming\n ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Vercel CLI 50.15.1:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Retrieving projectΓÇª
+Deploying kyles-projects-1a3e7e0d/nexus-vercel
+Uploading [--------------------] (0.0B/133.9KB)
+Uploading [=====---------------] (35.8KB/133.9KB)
+Uploading [==========----------] (68.7KB/133.9KB)
+Uploading [================----] (109.3KB/133.9KB)
+Uploading [====================] (133.9KB/133.9KB)
+Inspect: https://vercel.com/kyles-projects-1a3e7e0d/nexus-vercel/ACmRQpkr9kbRFjsdyjJ8kYT8zdRe [6s]
+Production: https://nexus-vercel-57gunkomr-kyles-projects-1a3e7e0d.vercel.app [6s]
+Building...
+Building: Running build in Washington, D.C., USA (East) ΓÇô iad1
+Building: Build machine configuration: 2 cores, 8 GB
+Building: Retrieving list of deployment files...
+Building: Downloading 94 deployment files...
+Building: Restored build cache from previous deployment (2djNhGz9H74SFHhLAGwK4x3WSMhA)
+Building: Restored build cache from previous deployment (2djNhGz9H74SFHhLAGwK4x3WSMhA)
+Building: Running "vercel build"
+Building: Vercel CLI 50.23.2
+Building: Installing dependencies...
+Building: up to date in 1s
+Building: 163 packages are looking for funding
+Building: run `npm fund` for details
+Building: Detected Next.js version: 16.1.6
+Building: Running "npm run build"
+Building: > nexus-vercel@0.1.0 build
+Building: > next build
+Building: ΓÜá `eslint` configuration in next.config.js is no longer supported. See more info here: 
+https://nextjs.org/docs/app/api-reference/cli/next#next-lint-options
+Building: ΓÜá Invalid next.config.js options detected:
+Building: ΓÜá     Unrecognized key(s) in object: 'eslint'
+Building: ΓÜá See more info here: https://nextjs.org/docs/messages/invalid-next-config
+Building: Γû▓ Next.js 16.1.6 (Turbopack)
+Building: ΓÜá The "middleware" file convention is deprecated. Please use "proxy" instead. Learn more: 
+https://nextjs.org/docs/messages/middleware-to-proxy
+Building: Creating an optimized production build ...
+Building: Γ£ô Compiled successfully in 10.5s
+Building: Skipping validation of types
+Building: Collecting page data using 1 worker ...
+Building: Generating static pages using 1 worker (0/4) ...
+Building: Generating static pages using 1 worker (1/4)
+Building: Generating static pages using 1 worker (2/4)
+Building: Generating static pages using 1 worker (3/4)
+Building: Γ£ô Generating static pages using 1 worker (4/4) in 79.2ms
+Building: Finalizing page optimization ...
+Building: Route (app)
+Building: Γöî ╞Æ /
+Building: Γö£ ╞Æ /_not-found
+Building: Γö£ ╞Æ /api/cron/retry
+Building: Γö£ ╞Æ /api/cron/revoke
+Building: Γö£ ╞Æ /dashboard
+Building: Γö£ ╞Æ /dashboard/invite
+Building: Γö£ ╞Æ /dashboard/stid
+Building: Γö£ ╞Æ /guard
+Building: Γö£ ╞Æ /guard/directory
+Building: Γö£ ╞Æ /guard/parking
+Building: Γö£ ╞Æ /guest/[id]
+Building: Γö£ Γùï /icon.png
+Building: Γö£ ╞Æ /login
+Building: Γö£ ╞Æ /super-admin
+Building: Γö£ ╞Æ /super-admin/announcements
+Building: Γö£ ╞Æ /super-admin/logs
+Building: Γöö ╞Æ /super-admin/units
+Building: ╞Æ Proxy (Middleware)
+Building: Γùï  (Static)   prerendered as static content
+Building: ╞Æ  (Dynamic)  server-rendered on demand
+Building: Traced Next.js server files in: 32.963ms
+Building: Created all serverless functions in: 154.247ms
+Building: Collected static files (public/, static/, .next/static): 3.697ms
+Building: Build Completed in /vercel/output [15s]
+Building: Deploying outputs...

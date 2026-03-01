@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { inviteVisitor } from './actions'
-import { Loader2, ArrowLeft, Upload, Users, Car } from 'lucide-react'
+import { Loader2, ArrowLeft, Users, Car } from 'lucide-react'
 import Link from 'next/link'
+import { BulkUpload } from './components/BulkUpload'
 
 export default function InvitePage() {
     const [error, setError] = useState<string | null>(null)
@@ -140,17 +141,7 @@ export default function InvitePage() {
                         </div>
                     </form>
                 ) : (
-                    <div className="relative z-10 w-full space-y-6">
-                        <div className="border-2 border-dashed border-border rounded-2xl p-12 text-center hover:bg-secondary/20 transition-colors cursor-pointer group">
-                            <Upload className="h-10 w-10 text-muted-foreground mx-auto mb-4 group-hover:text-primary transition-colors" />
-                            <h3 className="font-semibold text-lg text-foreground">Click to upload CSV</h3>
-                            <p className="text-sm text-muted-foreground mt-2">Upload a CSV containing Name, Email, and Access Date columns to bulk generate up to 50 credentials at once.</p>
-                            <input type="file" accept=".csv" className="hidden" />
-                        </div>
-                        <div className="flex justify-end pt-4 border-t border-border/40">
-                            <button className="btn-secondary px-8 font-semibold">Download CSV Template</button>
-                        </div>
-                    </div>
+                    <BulkUpload />
                 )}
             </div>
         </div>

@@ -107,3 +107,100 @@ export async function inviteVisitor(formData: FormData) {
     revalidatePath('/dashboard')
     redirect('/dashboard')
 }
+
+export async function inviteVisitorsBulk(visitors: Array<{ name: string, email: string, date: string, needsParking: boolean }>) {
+    const supabase = await createClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) {
+        return { error: 'Unauthorized' }
+    }
+
+    if (!visitors || visitors.length === 0) {
+        return { error: 'No visitor data provided.' }
+    }
+
+    if (visitors.length > 50) {
+        return { error: 'Maximum 50 invites allowed per bulk upload.' }
+    }
+
+    // Fetch user's profile to get unit_id & type 
+    const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select(`
+            unit_id,
+            units (type)
+        `)
+        .eq('id', user.id)
+        .single()
+
+    if (profileError || !profile?.unit_id) {
+        return { error: 'User does not belong to a valid unit' }
+    }
+
+    // Prepare array for bulk insertion
+    const visitorRecords = visitors.map(v => {
+        const credentialNumber = Math.floor(Math.random() * 4294967296)
+        const pinCode = Math.floor(10000 + Math.random() * 90000).toString()
+
+        return {
+            owner_id: user.id,
+            unit_id: profile.unit_id,
+            visitor_name: v.name,
+            visitor_email: v.email || null,
+            access_date: v.date,
+            credential_number: credentialNumber,
+            pin_code: pinCode,
+            needs_parking: v.needsParking,
+            status: 'active'
+        }
+    })
+
+    const { error: dbError } = await supabase
+        .from('visitors')
+        .insert(visitorRecords)
+
+    if (dbError) {
+        return { error: dbError.message }
+    }
+
+    // Audit Log Creation for bulk action
+    await supabase.from('audit_logs').insert({
+        actor_id: user.id,
+        action: 'INVITED_GUESTS_BULK',
+        details: { count: visitors.length }
+    })
+
+    // Try API Push (in a real scenario we might queue these or batch them if API supports it, 
+    // but for now we loop and push to the resilience tunnel gracefully to not block response)
+    const externalUrl = process.env.EXTERNAL_API_URL
+    const externalToken = process.env.EXTERNAL_API_TOKEN
+    const liftAccessLevel = Array.isArray(profile.units) ? profile.units[0]?.type : (profile.units as Record<string, unknown>)?.type === 'commercial' ? 'commercial' : 'residential'
+
+    if (externalUrl && externalToken) {
+        // Run fetches in background promises to not hang the server action
+        Promise.allSettled(visitorRecords.map(record =>
+            fetch(externalUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${externalToken}`
+                },
+                body: JSON.stringify({
+                    action: 'add_credential',
+                    credential_number: record.credential_number,
+                    visitor_name: record.visitor_name,
+                    access_date: record.access_date,
+                    tag_type: 15,
+                    lift_access_level: liftAccessLevel
+                })
+            })
+        )).catch(err => console.error('Bulk hardware bridge error:', err))
+    } else {
+        console.warn('Hardware bridge omitted during bulk: missing env vars EXTERNAL_API_URL or EXTERNAL_API_TOKEN')
+    }
+
+    revalidatePath('/dashboard')
+    // No redirect returned directly so the client UI can show success message instead of forcing navigation immediately
+    return { success: true }
+}
