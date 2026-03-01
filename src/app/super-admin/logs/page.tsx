@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { ScrollText, Download, Calendar, Activity, User, Key } from 'lucide-react'
+import { ScrollText, Calendar, Activity, User, Key } from 'lucide-react'
+import ExportButtons from './ExportButtons'
 import { format } from 'date-fns'
 
 export default async function GlobalAuditLogsPage() {
@@ -34,9 +35,7 @@ export default async function GlobalAuditLogsPage() {
                     </p>
                 </div>
 
-                <button className="btn-secondary flex items-center justify-center gap-2 whitespace-nowrap">
-                    <Download className="h-4 w-4" /> Export CSV
-                </button>
+                <ExportButtons />
             </div>
 
             <div className="glass-card rounded-2xl border border-border/50 overflow-hidden">

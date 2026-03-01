@@ -70,7 +70,15 @@ export async function inviteVisitor(formData: FormData) {
     })
 
     // 3. Hardware Bridge: Trigger External API Call
-    // We don't await this if we want a fire-and-forget, but for reliability we await
+    const payload = {
+        action: 'add_credential',
+        credential_number: credentialNumber,
+        visitor_name: name,
+        access_date: date,
+        tag_type: 15,
+        lift_access_level: Array.isArray(profile.units) ? profile.units[0]?.type : (profile.units as Record<string, unknown>)?.type === 'commercial' ? 'commercial' : 'residential'
+    }
+
     try {
         const externalUrl = process.env.EXTERNAL_API_URL
         const externalToken = process.env.EXTERNAL_API_TOKEN
@@ -82,26 +90,47 @@ export async function inviteVisitor(formData: FormData) {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${externalToken}`
                 },
-                body: JSON.stringify({
-                    action: 'add_credential',
-                    credential_number: credentialNumber,
-                    visitor_name: name,
-                    access_date: date,
-                    tag_type: 15,
-                    lift_access_level: Array.isArray(profile.units) ? profile.units[0]?.type : (profile.units as Record<string, unknown>)?.type === 'commercial' ? 'commercial' : 'residential'
-                })
+                body: JSON.stringify(payload)
             })
 
             if (!response.ok) {
-                console.error('Hardware bridge failed:', await response.text())
-                // We choose not to fail the user request if external hardware is down,
-                // but this could be configured based on strictness.
+                const errorText = await response.text()
+                console.error('Hardware bridge failed:', errorText)
+
+                // Fetch the visitor ID we just inserted
+                const { data: newVisitor } = await supabase
+                    .from('visitors')
+                    .select('id')
+                    .eq('credential_number', credentialNumber)
+                    .single()
+
+                if (newVisitor) {
+                    await supabase.from('api_retry_queue').insert({
+                        visitor_id: newVisitor.id,
+                        payload: payload,
+                        status: 'failed'
+                    })
+                }
             }
         } else {
             console.warn('Hardware bridge omitted: missing env vars EXTERNAL_API_URL or EXTERNAL_API_TOKEN')
         }
     } catch (err) {
         console.error('Hardware bridge network error:', err)
+        // Queue for retry even on network error
+        const { data: newVisitor } = await supabase
+            .from('visitors')
+            .select('id')
+            .eq('credential_number', credentialNumber)
+            .single()
+
+        if (newVisitor) {
+            await supabase.from('api_retry_queue').insert({
+                visitor_id: newVisitor.id,
+                payload: payload,
+                status: 'pending'
+            })
+        }
     }
 
     revalidatePath('/dashboard')
@@ -179,23 +208,59 @@ export async function inviteVisitorsBulk(visitors: Array<{ name: string, email: 
 
     if (externalUrl && externalToken) {
         // Run fetches in background promises to not hang the server action
-        Promise.allSettled(visitorRecords.map(record =>
-            fetch(externalUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${externalToken}`
-                },
-                body: JSON.stringify({
-                    action: 'add_credential',
-                    credential_number: record.credential_number,
-                    visitor_name: record.visitor_name,
-                    access_date: record.access_date,
-                    tag_type: 15,
-                    lift_access_level: liftAccessLevel
+        Promise.allSettled(visitorRecords.map(async (record) => {
+            const payload = {
+                action: 'add_credential',
+                credential_number: record.credential_number,
+                visitor_name: record.visitor_name,
+                access_date: record.access_date,
+                tag_type: 15,
+                lift_access_level: liftAccessLevel
+            }
+
+            try {
+                const response = await fetch(externalUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${externalToken}`
+                    },
+                    body: JSON.stringify(payload)
                 })
-            })
-        )).catch(err => console.error('Bulk hardware bridge error:', err))
+
+                if (!response.ok) {
+                    // Queue for retry
+                    const { data: newV } = await supabase
+                        .from('visitors')
+                        .select('id')
+                        .eq('credential_number', record.credential_number)
+                        .single()
+
+                    if (newV) {
+                        await supabase.from('api_retry_queue').insert({
+                            visitor_id: newV.id,
+                            payload: payload,
+                            status: 'failed'
+                        })
+                    }
+                }
+            } catch {
+                // Queue for retry on network error
+                const { data: newV } = await supabase
+                    .from('visitors')
+                    .select('id')
+                    .eq('credential_number', record.credential_number)
+                    .single()
+
+                if (newV) {
+                    await supabase.from('api_retry_queue').insert({
+                        visitor_id: newV.id,
+                        payload: payload,
+                        status: 'pending'
+                    })
+                }
+            }
+        })).catch(err => console.error('Bulk hardware bridge error:', err))
     } else {
         console.warn('Hardware bridge omitted during bulk: missing env vars EXTERNAL_API_URL or EXTERNAL_API_TOKEN')
     }

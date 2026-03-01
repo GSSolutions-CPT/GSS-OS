@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
 import { QRCodeDisplay } from '@/components/QRCodeDisplay'
 import { GuestAdBanner } from '@/components/GuestAdBanner'
 import { Wifi, Clock, ShieldAlert, KeySquare } from 'lucide-react'
@@ -18,10 +17,20 @@ export default async function GuestPassPage({ params }: { params: Promise<{ id: 
         .eq('id', id)
         .single()
 
-    if (!visitor) {
-        notFound()
+    const { data: settings } = await supabase
+        .from('building_settings')
+        .select('*')
+        .single()
+
+    const defaultSettings = {
+        house_rules: '1. No noise after 10PM.\n2. No littering in common areas.\n3. Residents responsible for guest behaviour.',
+        wifi_ssid: '35OnRose_Guest_WiFi',
+        wifi_password: 'rose-security-gss',
+        check_in_time: '14:00',
+        check_out_time: '10:00'
     }
 
+    const activeSettings = settings || defaultSettings
     const isRevoked = visitor.status === 'revoked'
     const unitName = Array.isArray(visitor.units) ? visitor.units[0]?.name : (visitor.units as unknown as { name?: string })?.name || 'Unknown Unit'
 
@@ -82,7 +91,8 @@ export default async function GuestPassPage({ params }: { params: Promise<{ id: 
                             <div>
                                 <h4 className="text-sm font-bold text-foreground">Access Hours</h4>
                                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                                    This pass is valid for entry between 06:00 and 22:00 on the selected date. Night access requires guard physical validation.
+                                    Check-in from <strong>{activeSettings.check_in_time}</strong>. Check-out by <strong>{activeSettings.check_out_time}</strong>.
+                                    Night access requires guard physical validation.
                                 </p>
                             </div>
                         </div>
@@ -94,8 +104,8 @@ export default async function GuestPassPage({ params }: { params: Promise<{ id: 
                             <div>
                                 <h4 className="text-sm font-bold text-foreground">Guest Wi-Fi</h4>
                                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                                    Network: <strong>GSS-Guest</strong><br />
-                                    Password: <strong>Welcome!2025</strong>
+                                    Network: <strong>{activeSettings.wifi_ssid}</strong><br />
+                                    Password: <strong>{activeSettings.wifi_password}</strong>
                                 </p>
                             </div>
                         </div>
@@ -106,11 +116,9 @@ export default async function GuestPassPage({ params }: { params: Promise<{ id: 
                             </div>
                             <div>
                                 <h4 className="text-sm font-bold text-foreground">House Rules</h4>
-                                <ul className="text-xs text-muted-foreground mt-1 leading-relaxed list-disc pl-4 space-y-1">
-                                    <li>Speed limit in basement is 15km/h.</li>
-                                    <li>No unauthorized access to commercial floors.</li>
-                                    <li>Present this pass to security if requested.</li>
-                                </ul>
+                                <div className="text-xs text-muted-foreground mt-1 leading-relaxed whitespace-pre-line">
+                                    {activeSettings.house_rules}
+                                </div>
                             </div>
                         </div>
                     </div>

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ShieldCheck, Activity, Building, ScrollText, Megaphone, LogOut } from 'lucide-react'
+import { ShieldCheck, Activity, Building, ScrollText, Megaphone, LogOut, RefreshCw, Settings } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
@@ -14,6 +14,8 @@ export function SuperAdminSidebar() {
     const links = [
         { name: 'System Health', href: '/super-admin', icon: Activity },
         { name: 'Unit Management', href: '/super-admin/units', icon: Building },
+        { name: 'Recovery Sync', href: '/super-admin/recovery', icon: RefreshCw },
+        { name: 'Building Settings', href: '/super-admin/settings', icon: Settings },
         { name: 'Global Audit Logs', href: '/super-admin/logs', icon: ScrollText },
         { name: 'Announcements', href: '/super-admin/announcements', icon: Megaphone },
     ]
