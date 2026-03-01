@@ -1,6 +1,6 @@
 import { RefreshCw } from 'lucide-react'
 import { getRetryQueue } from './actions'
-import RecoveryTable from './RecoveryTable'
+import RecoveryTable, { QueueItem } from './RecoveryTable'
 
 export default async function RecoveryPage() {
     const queue = await getRetryQueue()
@@ -17,7 +17,7 @@ export default async function RecoveryPage() {
                 </p>
             </div>
 
-            <RecoveryTable initialItems={queue as any[]} />
+            <RecoveryTable initialItems={queue as unknown as QueueItem[]} />
         </div>
     )
 }

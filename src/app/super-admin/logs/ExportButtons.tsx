@@ -14,6 +14,20 @@ declare module 'jspdf' {
     }
 }
 
+type Log = {
+    id: string
+    created_at: string
+    action: string
+    details: Record<string, unknown>
+    profiles: {
+        full_name: string
+        role: string
+    } | {
+        full_name: string
+        role: string
+    }[] | null
+}
+
 export default function ExportButtons() {
     const [isExporting, setIsExporting] = useState<'csv' | 'pdf' | null>(null)
 
@@ -24,7 +38,7 @@ export default function ExportButtons() {
             if (!logs || logs.length === 0) return
 
             const headers = ['Date', 'Time', 'Actor', 'Action', 'Details']
-            const rows = logs.map((log: any) => {
+            const rows = (logs as unknown as Log[]).map((log) => {
                 const actorName = Array.isArray(log.profiles)
                     ? (log.profiles[0] as { full_name?: string })?.full_name
                     : (log.profiles as { full_name?: string })?.full_name || 'System'
@@ -78,7 +92,7 @@ export default function ExportButtons() {
             doc.text(`Generated on: ${format(new Date(), 'yyyy-MM-dd HH:mm')}`, 14, 38)
 
             const head = [['Date', 'Actor', 'Action', 'Details']]
-            const body = logs.map((log: any) => {
+            const body = (logs as unknown as Log[]).map((log) => {
                 const actorName = Array.isArray(log.profiles)
                     ? (log.profiles[0] as { full_name?: string })?.full_name
                     : (log.profiles as { full_name?: string })?.full_name || 'System'

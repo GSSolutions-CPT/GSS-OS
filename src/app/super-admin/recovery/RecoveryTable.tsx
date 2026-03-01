@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { RefreshCw, Trash2, CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-react'
 import { retrySync, deleteRetryItem } from './actions'
 
-type QueueItem = {
+export type QueueItem = {
     id: string
     visitor_id: string
     payload: Record<string, unknown>
@@ -28,8 +28,8 @@ export default function RecoveryTable({ initialItems }: { initialItems: QueueIte
             setItems(prev => prev.map(item =>
                 item.id === id ? { ...item, status: 'completed' } : item
             ))
-        } catch (error: any) {
-            alert(error.message || 'Retry failed')
+        } catch (error) {
+            alert(error instanceof Error ? error.message : 'Retry failed')
             setItems(prev => prev.map(item =>
                 item.id === id ? { ...item, status: 'failed', retry_count: item.retry_count + 1 } : item
             ))
