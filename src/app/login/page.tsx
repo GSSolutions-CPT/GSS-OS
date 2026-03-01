@@ -32,11 +32,11 @@ export default function LoginPage() {
                 <div className="glass-card rounded-2xl p-8 relative flex flex-col items-center border-border/50">
 
                     <div className="h-20 w-auto flex items-center justify-center mb-6 drop-shadow-[0_0_15px_rgba(56,189,248,0.4)]">
-                        <Image src="/logo.svg" alt="Global Security Solutions" width={180} height={60} className="object-contain" priority />
+                        <Image src="/logo.png" alt="NEXUS by GSS" width={180} height={60} className="object-contain" priority />
                     </div>
 
                     <div className="text-center mb-8">
-                        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-2">Nexus Vercel</h1>
+                        <h1 className="text-3xl font-bold tracking-tight text-foreground mb-2">NEXUS by GSS</h1>
                         <p className="text-sm text-muted-foreground">Secure Access Portal</p>
                     </div>
 

@@ -27,7 +27,7 @@ export function Sidebar() {
     return (
         <div className="flex h-full w-64 flex-col border-r border-border bg-card/50 glass text-card-foreground">
             <div className="flex h-20 shrink-0 items-center justify-center px-6 border-b border-border/50 py-4 drop-shadow-[0_0_8px_rgba(56,189,248,0.3)]">
-                <Image src="/logo.svg" alt="Global Security Solutions" width={160} height={50} className="object-contain" priority />
+                <Image src="/logo.png" alt="NEXUS by GSS" width={160} height={50} className="object-contain" priority />
             </div>
             <nav className="flex-1 space-y-2 px-4 py-6">
                 {links.map((link) => {
