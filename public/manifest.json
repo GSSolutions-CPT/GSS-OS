@@ -1,6 +1,6 @@
 {
-    "name": "Nexus Security Portal",
-    "short_name": "Nexus",
+    "name": "NEXUS by GSS",
+    "short_name": "NEXUS",
     "description": "Global Security Solutions Visitor Management & Portal",
     "start_url": "/",
     "display": "standalone",

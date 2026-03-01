@@ -28,7 +28,7 @@ export function SuperAdminSidebar() {
         <div className="flex h-full w-64 flex-col border-r border-border bg-card/50 glass text-card-foreground">
             <div className="flex h-16 shrink-0 items-center px-6 border-b border-border/50">
                 <ShieldCheck className="h-6 w-6 text-primary mr-2" />
-                <span className="font-bold tracking-tight text-lg text-foreground">Nexus Vercel</span>
+                <span className="font-bold tracking-tight text-lg text-foreground">NEXUS by GSS</span>
             </div>
 
             <div className="px-6 py-4 border-b border-border/50">

@@ -23,13 +23,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Nexus Vercel | Visitor Management",
+  title: "NEXUS by GSS | Visitor Management",
   description: "Premium visitor, credential, and access management dashboard.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Nexus",
+    title: "NEXUS",
   },
 };
 
