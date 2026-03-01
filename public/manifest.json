@@ -1,7 +1,7 @@
 {
     "name": "NEXUS by GSS",
     "short_name": "NEXUS",
-    "description": "Global Security Solutions Visitor Management & Portal",
+    "description": "Global Security Solutions Visitor Management Software",
     "start_url": "/",
     "display": "standalone",
     "background_color": "#020617",

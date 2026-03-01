@@ -1,0 +1,14 @@
+﻿node.exe : Vercel CLI 50.15.1
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" "C:\Users\User\AppData\Roaming\n ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Vercel CLI 50.15.1:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+Retrieving projectΓÇª
+Deploying kyles-projects-1a3e7e0d/nexus-vercel
+Uploading [--------------------] (0.0B/1MB)
+Uploading [=====---------------] (271.7KB/1MB)
+Uploading [==========----------] (543.7KB/1MB)
+Uploading [===============-----] (799.7KB/1MB)
+Uploading [====================] (1.0MB/1MB)
