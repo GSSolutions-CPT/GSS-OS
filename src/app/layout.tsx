@@ -26,6 +26,10 @@ export const metadata: Metadata = {
   title: "NEXUS by GSS | Visitor Management",
   description: "Premium visitor, credential, and access management dashboard.",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icon.png",
+    apple: "/icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
