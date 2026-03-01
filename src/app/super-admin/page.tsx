@@ -34,7 +34,7 @@ export default function SuperAdminDashboard() {
                 if (mounted) {
                     setTunnelStatus(data.status === 'connected' ? 'online' : 'offline')
                 }
-            } catch (error) {
+            } catch {
                 if (mounted) setTunnelStatus('offline')
             }
         }
@@ -47,7 +47,7 @@ export default function SuperAdminDashboard() {
         }, 10000)
 
         return () => {
-            clearInterval(interval)
+            mounted = false
             clearInterval(interval)
         }
     }, [])
