@@ -2,7 +2,13 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import { QRCodeDisplay } from '@/components/QRCodeDisplay'
 import { GuestAdBanner } from '@/components/GuestAdBanner'
-import { Wifi, Clock, ShieldAlert, KeySquare } from 'lucide-react'
+import { Wifi, Clock, ShieldAlert, KeySquare, CalendarDays, CheckCircle2 } from 'lucide-react'
+
+type AccessWindow = {
+    access_date: string
+    start_time: string
+    end_time: string
+}
 
 export default async function GuestPassPage({ params }: { params: Promise<{ id: string }> }) {
     const supabase = await createClient()
@@ -13,7 +19,10 @@ export default async function GuestPassPage({ params }: { params: Promise<{ id: 
         .from('visitors')
         .select(`
             *,
-            units (name, type)
+            units (name, type),
+            visitor_access_windows (
+                access_date, start_time, end_time
+            )
         `)
         .eq('id', id)
         .single()
@@ -35,7 +44,34 @@ export default async function GuestPassPage({ params }: { params: Promise<{ id: 
 
     const activeSettings = settings || defaultSettings
     const isRevoked = visitor.status === 'revoked'
-    const unitName = Array.isArray(visitor.units) ? visitor.units[0]?.name : (visitor.units as unknown as { name?: string })?.name || 'Unknown Unit'
+    const unitName = Array.isArray(visitor.units)
+        ? visitor.units[0]?.name
+        : (visitor.units as unknown as { name?: string })?.name || 'Unknown Unit'
+
+    // Get sorted access windows
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rawWindows = (visitor as any).visitor_access_windows as AccessWindow[] | null
+    const accessWindows: AccessWindow[] = rawWindows
+        ? [...rawWindows].sort((a, b) => a.access_date.localeCompare(b.access_date))
+        : []
+
+    // Determine today's date string for highlighting
+    const todayStr = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD in local time
+
+    // Build header subtitle
+    const headerSubtitle = (() => {
+        if (accessWindows.length === 0) {
+            return `Valid for ${unitName}`
+        }
+        if (accessWindows.length === 1) {
+            const w = accessWindows[0]
+            const date = new Date(w.access_date + 'T00:00').toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })
+            return `Valid for ${unitName} · ${date}`
+        }
+        const first = new Date(accessWindows[0].access_date + 'T00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+        const last = new Date(accessWindows[accessWindows.length - 1].access_date + 'T00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+        return `${accessWindows.length} days access for ${unitName} · ${first} – ${last}`
+    })()
 
     return (
         <div className="min-h-screen bg-background flex flex-col items-center justify-start p-4 pb-12 sm:p-8">
@@ -44,7 +80,7 @@ export default async function GuestPassPage({ params }: { params: Promise<{ id: 
                 {/* Header Info */}
                 <div className="text-center space-y-2 mt-4">
                     <h1 className="text-2xl font-bold text-foreground">Welcome, {visitor.visitor_name}</h1>
-                    <p className="text-muted-foreground text-sm">Valid for {unitName} on {new Date(visitor.access_date).toLocaleDateString()}</p>
+                    <p className="text-muted-foreground text-sm">{headerSubtitle}</p>
                 </div>
 
                 {/* Main Pass Card */}
@@ -86,20 +122,50 @@ export default async function GuestPassPage({ params }: { params: Promise<{ id: 
                 <div className="glass-card rounded-2xl p-6 border border-border/50 space-y-6">
                     <h3 className="font-semibold text-lg border-b border-border/50 pb-3">Digital Guidebook</h3>
 
-                    <div className="space-y-4">
+                    <div className="space-y-5">
+                        {/* Access Schedule – dynamic per window */}
                         <div className="flex gap-4 items-start">
                             <div className="bg-primary/10 p-2 rounded-lg text-primary shrink-0">
-                                <Clock className="h-5 w-5" />
+                                <CalendarDays className="h-5 w-5" />
                             </div>
-                            <div>
-                                <h4 className="text-sm font-bold text-foreground">Access Hours</h4>
-                                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                                    Check-in from <strong>{activeSettings.check_in_time}</strong>. Check-out by <strong>{activeSettings.check_out_time}</strong>.
-                                    Night access requires guard physical validation.
-                                </p>
+                            <div className="flex-1">
+                                <h4 className="text-sm font-bold text-foreground mb-2">Access Schedule</h4>
+                                {accessWindows.length === 0 ? (
+                                    <p className="text-xs text-muted-foreground">
+                                        Check-in from <strong>{activeSettings.check_in_time}</strong>.{' '}
+                                        Check-out by <strong>{activeSettings.check_out_time}</strong>.
+                                    </p>
+                                ) : (
+                                    <div className="space-y-1.5">
+                                        {accessWindows.map((w, i) => {
+                                            const isToday = w.access_date === todayStr
+                                            const dateLabel = new Date(w.access_date + 'T00:00').toLocaleDateString(undefined, {
+                                                weekday: 'short', month: 'short', day: 'numeric'
+                                            })
+                                            return (
+                                                <div
+                                                    key={i}
+                                                    className={`flex items-center justify-between px-3 py-2 rounded-lg text-xs ${isToday
+                                                        ? 'bg-primary/15 border border-primary/30 text-foreground'
+                                                        : 'bg-secondary/30 text-muted-foreground'
+                                                        }`}
+                                                >
+                                                    <div className="flex items-center gap-2">
+                                                        {isToday && <CheckCircle2 className="h-3.5 w-3.5 text-primary" />}
+                                                        <span className={`font-semibold ${isToday ? 'text-primary' : ''}`}>
+                                                            {dateLabel}{isToday ? ' · Today' : ''}
+                                                        </span>
+                                                    </div>
+                                                    <span className="font-mono">{w.start_time} – {w.end_time}</span>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         </div>
 
+                        {/* Wi-Fi */}
                         <div className="flex gap-4 items-start">
                             <div className="bg-primary/10 p-2 rounded-lg text-primary shrink-0">
                                 <Wifi className="h-5 w-5" />
@@ -113,6 +179,7 @@ export default async function GuestPassPage({ params }: { params: Promise<{ id: 
                             </div>
                         </div>
 
+                        {/* House Rules */}
                         <div className="flex gap-4 items-start">
                             <div className="bg-primary/10 p-2 rounded-lg text-primary shrink-0">
                                 <ShieldAlert className="h-5 w-5" />
@@ -124,6 +191,21 @@ export default async function GuestPassPage({ params }: { params: Promise<{ id: 
                                 </div>
                             </div>
                         </div>
+
+                        {/* Legacy fallback if no windows */}
+                        {accessWindows.length === 0 && (
+                            <div className="flex gap-4 items-start">
+                                <div className="bg-primary/10 p-2 rounded-lg text-primary shrink-0">
+                                    <Clock className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <h4 className="text-sm font-bold text-foreground">Building Hours</h4>
+                                    <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                                        Night access requires guard physical validation.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 

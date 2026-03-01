@@ -4,6 +4,12 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 
+type AccessWindow = {
+    date: string        // YYYY-MM-DD
+    start_time: string  // HH:MM
+    end_time: string    // HH:MM
+}
+
 export async function inviteVisitor(formData: FormData) {
     const supabase = await createClient()
 
@@ -14,14 +20,40 @@ export async function inviteVisitor(formData: FormData) {
 
     const name = formData.get('name') as string
     const email = formData.get('email') as string
-    const date = formData.get('date') as string
     const needsParking = formData.get('needs_parking') === 'on'
+    const accessWindowsRaw = formData.get('access_windows') as string
 
-    if (!name || !date) {
-        return { error: 'Name and Access Date are required.' }
+    if (!name) {
+        return { error: 'Visitor name is required.' }
     }
 
-    // Fetch user's profile to get unit_id & type 
+    // Parse and validate access windows
+    let accessWindows: AccessWindow[] = []
+    try {
+        accessWindows = JSON.parse(accessWindowsRaw || '[]')
+    } catch {
+        return { error: 'Invalid access window data.' }
+    }
+
+    if (!accessWindows || accessWindows.length === 0) {
+        return { error: 'At least one access day is required.' }
+    }
+
+    // Validate each window
+    for (const w of accessWindows) {
+        if (!w.date || !w.start_time || !w.end_time) {
+            return { error: 'Each access window must have a date, start time, and end time.' }
+        }
+        if (w.start_time >= w.end_time) {
+            return { error: `Start time must be before end time for ${w.date}.` }
+        }
+    }
+
+    // Sort windows by date — first date becomes the primary access_date for backward compat
+    accessWindows.sort((a, b) => a.date.localeCompare(b.date))
+    const primaryDate = accessWindows[0].date
+
+    // Fetch user's profile to get unit_id & unit type 
     const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select(`
@@ -41,42 +73,75 @@ export async function inviteVisitor(formData: FormData) {
     // Generate a 5-digit backup PIN
     const pinCode = Math.floor(10000 + Math.random() * 90000).toString()
 
-    // 2. Insert into Supabase
+    // 2. Insert visitor row (access_date = first window for backward compat)
     const visitorData = {
         owner_id: user.id,
         unit_id: profile.unit_id,
         visitor_name: name,
         visitor_email: email || null,
-        access_date: date,
+        access_date: primaryDate,
         credential_number: credentialNumber,
         pin_code: pinCode,
         needs_parking: needsParking,
         status: 'active'
     }
 
-    const { error: dbError } = await supabase
+    const { data: newVisitor, error: dbError } = await supabase
         .from('visitors')
         .insert([visitorData])
+        .select('id')
+        .single()
 
-    if (dbError) {
-        return { error: dbError.message }
+    if (dbError || !newVisitor) {
+        return { error: dbError?.message || 'Failed to create visitor record.' }
     }
 
-    // Audit Log Creation
+    // 3. Bulk-insert all access windows
+    const windowRows = accessWindows.map(w => ({
+        visitor_id: newVisitor.id,
+        access_date: w.date,
+        start_time: w.start_time,
+        end_time: w.end_time
+    }))
+
+    const { error: windowsError } = await supabase
+        .from('visitor_access_windows')
+        .insert(windowRows)
+
+    if (windowsError) {
+        console.error('Failed to insert access windows:', windowsError)
+        // Non-fatal: visitor was created, continue
+    }
+
+    // Audit Log
     await supabase.from('audit_logs').insert({
         actor_id: user.id,
         action: 'INVITED_GUEST',
-        details: { visitor_name: name, access_date: date, needs_parking: needsParking }
+        details: {
+            visitor_name: name,
+            access_windows: accessWindows,
+            needs_parking: needsParking
+        }
     })
 
-    // 3. Hardware Bridge: Trigger External API Call
+    // 4. Hardware Bridge: Send enriched payload with all windows
+    const liftAccessLevel = Array.isArray(profile.units)
+        ? profile.units[0]?.type
+        : (profile.units as Record<string, unknown>)?.type === 'commercial' ? 'commercial' : 'residential'
+
     const payload = {
         action: 'add_credential',
         credential_number: credentialNumber,
         visitor_name: name,
-        access_date: date,
+        access_windows: accessWindows.map(w => ({
+            date: w.date,
+            start_time: w.start_time,
+            end_time: w.end_time
+        })),
+        // Legacy single-date field for older firmware
+        access_date: primaryDate,
         tag_type: 15,
-        lift_access_level: Array.isArray(profile.units) ? profile.units[0]?.type : (profile.units as Record<string, unknown>)?.type === 'commercial' ? 'commercial' : 'residential'
+        lift_access_level: liftAccessLevel
     }
 
     try {
@@ -96,41 +161,22 @@ export async function inviteVisitor(formData: FormData) {
             if (!response.ok) {
                 const errorText = await response.text()
                 console.error('Hardware bridge failed:', errorText)
-
-                // Fetch the visitor ID we just inserted
-                const { data: newVisitor } = await supabase
-                    .from('visitors')
-                    .select('id')
-                    .eq('credential_number', credentialNumber)
-                    .single()
-
-                if (newVisitor) {
-                    await supabase.from('api_retry_queue').insert({
-                        visitor_id: newVisitor.id,
-                        payload: payload,
-                        status: 'failed'
-                    })
-                }
+                await supabase.from('api_retry_queue').insert({
+                    visitor_id: newVisitor.id,
+                    payload: payload,
+                    status: 'failed'
+                })
             }
         } else {
             console.warn('Hardware bridge omitted: missing env vars EXTERNAL_API_URL or EXTERNAL_API_TOKEN')
         }
     } catch (err) {
         console.error('Hardware bridge network error:', err)
-        // Queue for retry even on network error
-        const { data: newVisitor } = await supabase
-            .from('visitors')
-            .select('id')
-            .eq('credential_number', credentialNumber)
-            .single()
-
-        if (newVisitor) {
-            await supabase.from('api_retry_queue').insert({
-                visitor_id: newVisitor.id,
-                payload: payload,
-                status: 'pending'
-            })
-        }
+        await supabase.from('api_retry_queue').insert({
+            visitor_id: newVisitor.id,
+            payload: payload,
+            status: 'pending'
+        })
     }
 
     revalidatePath('/dashboard')
@@ -185,34 +231,46 @@ export async function inviteVisitorsBulk(visitors: Array<{ name: string, email: 
         }
     })
 
-    const { error: dbError } = await supabase
+    const { data: insertedVisitors, error: dbError } = await supabase
         .from('visitors')
         .insert(visitorRecords)
+        .select('id, access_date, credential_number, visitor_name')
 
-    if (dbError) {
-        return { error: dbError.message }
+    if (dbError || !insertedVisitors) {
+        return { error: dbError?.message || 'Database insert failed.' }
     }
 
-    // Audit Log Creation for bulk action
+    // Create one default all-day window per visitor (bulk uploads use single date from CSV)
+    const windowRows = insertedVisitors.map(v => ({
+        visitor_id: v.id,
+        access_date: v.access_date,
+        start_time: '06:00',
+        end_time: '22:00'
+    }))
+
+    await supabase.from('visitor_access_windows').insert(windowRows)
+
+    // Audit Log
     await supabase.from('audit_logs').insert({
         actor_id: user.id,
         action: 'INVITED_GUESTS_BULK',
         details: { count: visitors.length }
     })
 
-    // Try API Push (in a real scenario we might queue these or batch them if API supports it, 
-    // but for now we loop and push to the resilience tunnel gracefully to not block response)
+    // Try API Push in background
     const externalUrl = process.env.EXTERNAL_API_URL
     const externalToken = process.env.EXTERNAL_API_TOKEN
-    const liftAccessLevel = Array.isArray(profile.units) ? profile.units[0]?.type : (profile.units as Record<string, unknown>)?.type === 'commercial' ? 'commercial' : 'residential'
+    const liftAccessLevel = Array.isArray(profile.units)
+        ? profile.units[0]?.type
+        : (profile.units as Record<string, unknown>)?.type === 'commercial' ? 'commercial' : 'residential'
 
     if (externalUrl && externalToken) {
-        // Run fetches in background promises to not hang the server action
-        Promise.allSettled(visitorRecords.map(async (record) => {
+        Promise.allSettled(insertedVisitors.map(async (record) => {
             const payload = {
                 action: 'add_credential',
                 credential_number: record.credential_number,
                 visitor_name: record.visitor_name,
+                access_windows: [{ date: record.access_date, start_time: '06:00', end_time: '22:00' }],
                 access_date: record.access_date,
                 tag_type: 15,
                 lift_access_level: liftAccessLevel
@@ -229,43 +287,22 @@ export async function inviteVisitorsBulk(visitors: Array<{ name: string, email: 
                 })
 
                 if (!response.ok) {
-                    // Queue for retry
-                    const { data: newV } = await supabase
-                        .from('visitors')
-                        .select('id')
-                        .eq('credential_number', record.credential_number)
-                        .single()
-
-                    if (newV) {
-                        await supabase.from('api_retry_queue').insert({
-                            visitor_id: newV.id,
-                            payload: payload,
-                            status: 'failed'
-                        })
-                    }
-                }
-            } catch {
-                // Queue for retry on network error
-                const { data: newV } = await supabase
-                    .from('visitors')
-                    .select('id')
-                    .eq('credential_number', record.credential_number)
-                    .single()
-
-                if (newV) {
                     await supabase.from('api_retry_queue').insert({
-                        visitor_id: newV.id,
+                        visitor_id: record.id,
                         payload: payload,
-                        status: 'pending'
+                        status: 'failed'
                     })
                 }
+            } catch {
+                await supabase.from('api_retry_queue').insert({
+                    visitor_id: record.id,
+                    payload: payload,
+                    status: 'pending'
+                })
             }
         })).catch(err => console.error('Bulk hardware bridge error:', err))
-    } else {
-        console.warn('Hardware bridge omitted during bulk: missing env vars EXTERNAL_API_URL or EXTERNAL_API_TOKEN')
     }
 
     revalidatePath('/dashboard')
-    // No redirect returned directly so the client UI can show success message instead of forcing navigation immediately
     return { success: true }
 }

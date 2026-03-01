@@ -1,20 +1,48 @@
 import { createClient } from '@/lib/supabase/server'
-import { PlusCircle, Search, Car } from 'lucide-react'
+import { PlusCircle, Search, Car, CalendarDays } from 'lucide-react'
 import Link from 'next/link'
 import { QRCodeDisplay } from '@/components/QRCodeDisplay'
 import { RevokeButton } from './RevokeButton'
 import { ResendButton } from './ResendButton'
+
+type AccessWindow = {
+    id: string
+    access_date: string
+    start_time: string
+    end_time: string
+}
 
 export default async function DashboardPage() {
     const supabase = await createClient()
 
     await supabase.auth.getUser()
 
-    // Fetch visitors for this owner (RLS handles isolation)
+    // Fetch visitors with their access windows
     const { data: visitors } = await supabase
         .from('visitors')
-        .select('*')
+        .select(`
+            *,
+            visitor_access_windows (
+                id, access_date, start_time, end_time
+            )
+        `)
         .order('created_at', { ascending: false })
+
+    function formatAccessPeriod(windows: AccessWindow[] | undefined | null): string {
+        if (!windows || windows.length === 0) return 'N/A'
+
+        const sorted = [...windows].sort((a, b) => a.access_date.localeCompare(b.access_date))
+        const format = (d: string) => new Date(d + 'T00:00').toLocaleDateString(undefined, {
+            month: 'short', day: 'numeric'
+        })
+
+        if (sorted.length === 1) {
+            const w = sorted[0]
+            return `${format(w.access_date)} · ${w.start_time}–${w.end_time}`
+        }
+
+        return `${format(sorted[0].access_date)} – ${format(sorted[sorted.length - 1].access_date)} (${sorted.length} days)`
+    }
 
     return (
         <div className="flex flex-col gap-8">
@@ -27,7 +55,7 @@ export default async function DashboardPage() {
                 </div>
                 <Link
                     href="/dashboard/invite"
-                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-[0_4px_14px_0_rgba(250,204,21,0.2)]"
+                    className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-4 py-2 rounded-lg flex items-center gap-2 transition-all shadow-[0_4px_14px_0_rgba(56,189,248,0.2)]"
                 >
                     <PlusCircle className="h-4 w-4" />
                     Invite Visitor
@@ -51,7 +79,7 @@ export default async function DashboardPage() {
                         <thead className="text-xs text-muted-foreground uppercase bg-card/50 border-b border-border/50">
                             <tr>
                                 <th className="px-6 py-4 font-medium">Visitor Name</th>
-                                <th className="px-6 py-4 font-medium">Access Date</th>
+                                <th className="px-6 py-4 font-medium">Access Period</th>
                                 <th className="px-6 py-4 font-medium">Details</th>
                                 <th className="px-6 py-4 font-medium text-right">Pass</th>
                             </tr>
@@ -71,12 +99,30 @@ export default async function DashboardPage() {
                                             <div className="text-xs text-muted-foreground font-normal mt-0.5">{visitor.visitor_email}</div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            {new Date(visitor.access_date).toLocaleDateString(undefined, {
-                                                weekday: 'short',
-                                                year: 'numeric',
-                                                month: 'short',
-                                                day: 'numeric'
-                                            })}
+                                            <div className="flex items-start gap-2">
+                                                <CalendarDays className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                                                <div>
+                                                    <div className="font-medium text-foreground text-xs">
+                                                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                                        {formatAccessPeriod((visitor as any).visitor_access_windows)}
+                                                    </div>
+                                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                                    {(visitor as any).visitor_access_windows?.length > 1 && (
+                                                        <div className="text-[10px] text-muted-foreground mt-0.5">
+                                                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
+                                                            {(visitor as any).visitor_access_windows
+                                                                .slice()
+                                                                .sort((a: AccessWindow, b: AccessWindow) => a.access_date.localeCompare(b.access_date))
+                                                                .map((w: AccessWindow) => (
+                                                                    <div key={w.id}>
+                                                                        {new Date(w.access_date + 'T00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                                                                        {': '}{w.start_time}–{w.end_time}
+                                                                    </div>
+                                                                ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <div className="flex flex-col gap-1.5 items-start">

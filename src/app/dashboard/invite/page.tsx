@@ -5,13 +5,19 @@ import { inviteVisitor } from './actions'
 import { Loader2, ArrowLeft, Users, Car } from 'lucide-react'
 import Link from 'next/link'
 import { BulkUpload } from './components/BulkUpload'
+import { AccessWindowPicker, type AccessWindow } from './components/AccessWindowPicker'
 
 export default function InvitePage() {
     const [error, setError] = useState<string | null>(null)
     const [isLoading, setIsLoading] = useState(false)
     const [mode, setMode] = useState<'single' | 'bulk'>('single')
+    const [accessWindows, setAccessWindows] = useState<AccessWindow[]>([])
 
     async function handleSubmit(formData: FormData) {
+        if (accessWindows.length === 0) {
+            setError('Please add at least one access day.')
+            return
+        }
         setIsLoading(true)
         setError(null)
         const res = await inviteVisitor(formData)
@@ -83,32 +89,28 @@ export default function InvitePage() {
                             />
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-foreground/90" htmlFor="email">
-                                    Email Address <span className="text-muted-foreground font-normal">(Optional)</span>
-                                </label>
-                                <input
-                                    id="email"
-                                    name="email"
-                                    type="email"
-                                    placeholder="john.doe@example.com"
-                                    className="w-full bg-input/40 border border-border/80 rounded-xl px-4 py-3 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
-                                />
-                            </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-foreground/90" htmlFor="email">
+                                Email Address <span className="text-muted-foreground font-normal">(Optional)</span>
+                            </label>
+                            <input
+                                id="email"
+                                name="email"
+                                type="email"
+                                placeholder="john.doe@example.com"
+                                className="w-full bg-input/40 border border-border/80 rounded-xl px-4 py-3 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm"
+                            />
+                        </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-semibold text-foreground/90" htmlFor="date">
-                                    Access Date <span className="text-destructive">*</span>
-                                </label>
-                                <input
-                                    id="date"
-                                    name="date"
-                                    type="date"
-                                    required
-                                    className="w-full bg-input/40 border border-border/80 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all text-sm text-foreground [color-scheme:dark]"
-                                />
-                            </div>
+                        {/* Multi-day access window picker */}
+                        <div className="space-y-2">
+                            <p className="text-sm font-semibold text-foreground/90">
+                                Access Days & Times <span className="text-destructive">*</span>
+                            </p>
+                            <p className="text-xs text-muted-foreground -mt-1">
+                                Add one or more days. Set exact entry and exit times per day.
+                            </p>
+                            <AccessWindowPicker windows={accessWindows} onChange={setAccessWindows} />
                         </div>
 
                         <div className="mb-4">
@@ -126,7 +128,7 @@ export default function InvitePage() {
                         <div className="pt-4 border-t border-border/40 flex justify-end">
                             <button
                                 type="submit"
-                                disabled={isLoading}
+                                disabled={isLoading || accessWindows.length === 0}
                                 className="w-full sm:w-auto px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-all shadow-[0_4px_14px_0_rgba(56,189,248,0.39)] hover:shadow-[0_6px_20px_rgba(56,189,248,0.23)] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center"
                             >
                                 {isLoading ? (
@@ -135,7 +137,7 @@ export default function InvitePage() {
                                         Generating...
                                     </>
                                 ) : (
-                                    'Generate Credential & Invite'
+                                    `Generate Credential${accessWindows.length > 1 ? ` (${accessWindows.length} days)` : ''} & Invite`
                                 )}
                             </button>
                         </div>
