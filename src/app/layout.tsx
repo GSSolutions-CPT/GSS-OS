@@ -23,8 +23,8 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "NEXUS by GSS | Visitor Management",
-  description: "Premium visitor, credential, and access management dashboard.",
+  title: "NEXUS by GSS | Visitors Managment Software",
+  description: "Global Security Solutions Visitors Managment Software",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon.png",
