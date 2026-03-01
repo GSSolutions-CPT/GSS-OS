@@ -33,7 +33,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "NEXUS",
+    title: "NEXUS By GSS",
   },
 };
 
