@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { login } from './actions'
-import { Loader2, Shield, Lock, Eye, EyeOff, Fingerprint, Wifi, Activity } from 'lucide-react'
+import { Loader2, Shield, Lock, Eye, EyeOff, QrCode, Wifi, Activity } from 'lucide-react'
 import Image from 'next/image'
 
 export default function LoginPage() {
@@ -61,7 +61,7 @@ export default function LoginPage() {
                 {/* Floating stat cards */}
                 <div className="flex gap-4">
                     {[
-                        { icon: Fingerprint, label: 'Biometric Auth', value: 'Active' },
+                        { icon: QrCode, label: 'Mobile & QR Code Auth', value: 'Active' },
                         { icon: Wifi, label: 'Bridge Status', value: 'Online' },
                         { icon: Shield, label: 'RLS Policies', value: 'Enforced' },
                     ].map(({ icon: Icon, label, value }) => (
