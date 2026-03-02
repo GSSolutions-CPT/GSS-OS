@@ -67,8 +67,11 @@ export async function inviteVisitor(formData: FormData) {
         return { error: 'User does not belong to a valid unit' }
     }
 
-    // 1. Generate 32-bit Wiegand integer (0 to 4294967295)
-    const credentialNumber = Math.floor(Math.random() * 4294967296)
+    // Generate a Wiegand-26 safe credential number (max 2^26 - 1 = 67,108,863).
+    // Impro SLP940 readers using Wiegand-26 protocol silently overflow on 32-bit values.
+    // Using a value within 26-bit range ensures compatibility with all Impro reader types.
+    const WIEGAND26_MAX = 67_108_863
+    const credentialNumber = Math.floor(Math.random() * (WIEGAND26_MAX + 1))
 
     // Generate a 5-digit backup PIN
     const pinCode = Math.floor(10000 + Math.random() * 90000).toString()

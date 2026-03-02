@@ -1,73 +1,30 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
 
-// This endpoint is meant to be called by a cron job (e.g. Vercel Cron)
-// It finds all active guests whose access_date has passed and revokes them in Supabase
-// and sends a revoke signal to the Impro hardware API.
+export const dynamic = 'force-dynamic'
 
+// DEPRECATED: This route is superseded by /api/cron/expire which handles
+// multi-day access windows and time-aware expiry. Redirecting to it.
 export async function GET(request: Request) {
-    // Basic authorization check (e.g., using a CRON_SECRET)
     const authHeader = request.headers.get('authorization')
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
         return new Response('Unauthorized', { status: 401 })
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    // Forward to the expire cron which does the same job (and more)
+    const baseUrl = process.env.NEXTAUTH_URL || process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : 'http://localhost:3000'
 
-    const today = new Date().toISOString().split('T')[0]
-
-    // Find active visitors from BEFORE today
-    const { data: expiredVisitors, error } = await supabase
-        .from('visitors')
-        .select('*')
-        .eq('status', 'active')
-        .lt('access_date', today)
-
-    if (error) {
-        return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    if (!expiredVisitors || expiredVisitors.length === 0) {
-        return NextResponse.json({ message: 'No expired credentials found.' })
-    }
-
-    const revokedIds = []
-
-    for (const visitor of expiredVisitors) {
-        // 1. Mark as revoked in DB
-        await supabase
-            .from('visitors')
-            .update({ status: 'revoked' })
-            .eq('id', visitor.id)
-
-        // 2. Call external hardware API to remove cred from Impro memory
-        if (process.env.EXTERNAL_API_URL) {
-            try {
-                await fetch(process.env.EXTERNAL_API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${process.env.EXTERNAL_API_TOKEN}`
-                    },
-                    body: JSON.stringify({
-                        action: 'revoke_credential',
-                        credential_number: visitor.credential_number
-                    })
-                })
-            } catch {
-                console.error(`Failed to push revoke for ${visitor.id} to hardware.`)
-                // Ideally we'd add this to the api_retry_queue here
+    try {
+        const res = await fetch(`${baseUrl}/api/cron/expire`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${process.env.CRON_SECRET}`
             }
-        }
-
-        revokedIds.push(visitor.id)
+        })
+        const data = await res.json()
+        return NextResponse.json({ forwarded_to: 'cron/expire', ...data })
+    } catch (err) {
+        return NextResponse.json({ error: 'Failed to forward to cron/expire', detail: String(err) }, { status: 500 })
     }
-
-    return NextResponse.json({
-        message: 'Successfully purged expired credentials.',
-        revoked_count: revokedIds.length,
-        revoked_ids: revokedIds
-    })
 }
