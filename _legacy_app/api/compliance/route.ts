@@ -44,8 +44,8 @@ export async function POST(request: Request) {
         else if (voltage >= 5000) uiStatus = "WARNING";
 
         return NextResponse.json({ message: 'Logged', status: uiStatus, data });
-    } catch (error: any) {
+    } catch (error) {
         console.error("Compliance Error:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        return NextResponse.json({ error: (error as Error).message }, { status: 500 });
     }
 }

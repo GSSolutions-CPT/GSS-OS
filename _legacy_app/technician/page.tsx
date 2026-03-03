@@ -2,10 +2,16 @@
 import { useState } from 'react';
 import Link from 'next/link';
 
+interface ComplianceResult {
+    message?: string;
+    error?: string;
+    [key: string]: unknown;
+}
+
 export default function TechnicianApp() {
     const [voltage, setVoltage] = useState(7000);
     const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState<any>(null);
+    const [result, setResult] = useState<ComplianceResult | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -76,8 +82,8 @@ export default function TechnicianApp() {
 
                     {result && (
                         <div className={`mt-6 p-4 rounded-lg flex items-center justify-between ${result.status === 'COMPLIANT' ? 'bg-green-900/50 border border-green-500' :
-                                result.status === 'WARNING' ? 'bg-yellow-900/50 border border-yellow-500' :
-                                    'bg-red-900/50 border border-red-500'
+                            result.status === 'WARNING' ? 'bg-yellow-900/50 border border-yellow-500' :
+                                'bg-red-900/50 border border-red-500'
                             }`}>
                             <div>
                                 <p className="font-bold text-lg">{result.status}</p>

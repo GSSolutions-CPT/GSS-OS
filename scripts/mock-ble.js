@@ -1,7 +1,7 @@
 // mock-ble.js
 // Simulates an ESP32 sending Staff UUID at 08:00 (In) and 17:00 (Out)
 
-const fetch = require('node-fetch'); // Needs 'node-fetch' installed or use Node 18+ native fetch
+import fetch from 'node-fetch'; // Needs 'node-fetch' installed or use Node 18+ native fetch
 
 const API_URL = "http://localhost:3000/api/gatekeeper";
 const STAFF_UUID = "123e4567-e89b-12d3-a456-426614174000";

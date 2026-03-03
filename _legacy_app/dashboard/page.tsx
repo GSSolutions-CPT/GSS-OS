@@ -2,8 +2,20 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+interface AttendanceRecord {
+    id: string;
+    device_id: string;
+    credential_type: string;
+    user?: {
+        role: string;
+        email: string;
+    };
+    check_in: string;
+    check_out?: string | null;
+}
+
 export default function Dashboard() {
-    const [attendance, setAttendance] = useState<any[]>([]);
+    const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -43,7 +55,7 @@ export default function Dashboard() {
                                     <td colSpan={4} className="px-6 py-4 text-center text-gray-500">No records found. Run mock-ble.js script.</td>
                                 </tr>
                             ) : (
-                                attendance.slice().reverse().map((record: any) => (
+                                attendance.slice().reverse().map((record: AttendanceRecord) => (
                                     <tr key={record.id}>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{record.device_id}</td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{record.credential_type}</td>

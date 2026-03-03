@@ -18,7 +18,7 @@ export async function GET() {
         // Map Attendance to look like the mock objects
         // Mock: { device_id, credential_type, timestamp, type... }
         // DB: { id, check_in, check_out, users: { full_name }, ... }
-        const attendance = (attendanceRes.data || []).flatMap((row: any) => {
+        const attendance = (attendanceRes.data || []).flatMap((row: Record<string, unknown>) => {
             // We need to return TWO events for a completed session? Or just the row?
             // The dashboard expects a list of "events" (Check IN, Check OUT).
             // Our DB stores "Periods".

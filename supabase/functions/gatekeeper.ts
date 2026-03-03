@@ -37,7 +37,7 @@ serve(async (req) => {
     // 2. Schedule Check (08:00 - 17:00)
     const now = new Date();
     const currentHour = now.getHours();
-    
+
     // Simple mock schedule check
     if (currentHour < 8 || currentHour >= 18) {
       // Allow it but flag it? Or reject? Prompt says "Validate... against Schedule".
@@ -62,13 +62,13 @@ serve(async (req) => {
       const durationMs = now.getTime() - checkInTime.getTime();
       const totalHours = durationMs / (1000 * 60 * 60);
 
-      const { data: updateData, error: updateError } = await supabase
+      const { data: updateData } = await supabase
         .from("attendance_periods")
         .update({ check_out: now.toISOString(), total_hours: totalHours })
         .eq("id", openSession.id)
         .select()
         .single();
-        
+
       return new Response(JSON.stringify({ message: "Checked Out", data: updateData }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -81,7 +81,7 @@ serve(async (req) => {
         .eq("id", device_id)
         .single();
 
-      const { data: insertData, error: insertError } = await supabase
+      const { data: insertData } = await supabase
         .from("attendance_periods")
         .insert({
           user_id: creds.user_id,

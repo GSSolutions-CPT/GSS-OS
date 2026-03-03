@@ -2,7 +2,7 @@
 // Simple in-memory store for the demo to work without a running DB if needed.
 
 declare global {
-    var _mockStore: any;
+    var _mockStore: Record<string, unknown>;
 }
 
 if (!global._mockStore) {

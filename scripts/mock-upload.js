@@ -1,7 +1,7 @@
 // mock-upload.js
 // Simulates Technician posting voltage + dummy image file
 
-const fetch = require('node-fetch');
+import fetch from 'node-fetch';
 
 const API_URL = "http://localhost:3000/api/compliance";
 

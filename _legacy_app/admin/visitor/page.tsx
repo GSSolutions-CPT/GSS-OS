@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function VisitorAccess() {
     const [guestName, setGuestName] = useState('');
@@ -62,7 +63,7 @@ export default function VisitorAccess() {
                             <div className="bg-green-100 text-green-800 px-4 py-2 rounded-full inline-block text-sm font-semibold">
                                 Pass Generated
                             </div>
-                            <img src={qrCode} alt="QR Code" className="mx-auto w-48 h-48 border-4 border-black rounded-lg" />
+                            <Image src={qrCode} alt="QR Code" width={192} height={192} className="mx-auto w-48 h-48 border-4 border-black rounded-lg" />
                             <p className="font-mono text-sm break-all text-gray-500">Share this QR code with the guest.</p>
 
                             <button onClick={() => setQrCode(null)} className="text-sm text-blue-600 underline">

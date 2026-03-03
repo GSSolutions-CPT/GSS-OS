@@ -1,7 +1,7 @@
 // mock-alarm.js
 // Simulates Paradox Panel sending Zone Open/Close
 
-const fetch = require('node-fetch');
+import fetch from 'node-fetch';
 
 const API_URL = "http://localhost:3000/api/alarm-events";
 

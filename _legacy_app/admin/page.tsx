@@ -2,8 +2,18 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 
+interface Alarm {
+    id: string;
+    zone_id: number;
+    partition: number;
+    status: string;
+    created_at: string;
+    timestamp: string;
+    event_group: number;
+}
+
 export default function AdminDashboard() {
-    const [alarms, setAlarms] = useState<any[]>([]);
+    const [alarms, setAlarms] = useState<Alarm[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -33,7 +43,7 @@ export default function AdminDashboard() {
                         <h2 className="text-xl mb-4 text-white">INTRUSION ALARMS</h2>
                         <div className="space-y-2 h-[500px] overflow-y-auto">
                             {alarms.length === 0 && <span className="opacity-50">No Active Alarms... System Secure.</span>}
-                            {alarms.slice().reverse().map((alarm: any) => (
+                            {alarms.slice().reverse().map((alarm: Alarm) => (
                                 <div key={alarm.id} className={`p-2 border-l-4 ${alarm.status === 'OPEN' ? 'border-red-500 bg-red-900/20' : 'border-green-500 bg-green-900/10'}`}>
                                     <div className="flex justify-between">
                                         <span>ZN:{alarm.zone_id} [{alarm.status}]</span>
