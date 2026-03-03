@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Server, Zap, RefreshCw, AlertTriangle, ShieldAlert } from 'lucide-react'
 
 export default function SuperAdminDashboard() {
@@ -8,49 +8,37 @@ export default function SuperAdminDashboard() {
     const [sitesUsed, setSitesUsed] = useState(1485)
     const MAX_SITES = 2000
 
-    const checkTunnelHealth = async () => {
+    const checkTunnelHealth = useCallback(async () => {
         setTunnelStatus('checking')
         try {
             const res = await fetch('/api/health')
-            const data = await res.json()
-            if (data.status === 'connected') {
-                setTunnelStatus('online')
-            } else {
+
+            if (!res.ok && res.status >= 500) {
                 setTunnelStatus('offline')
+                return
             }
+
+            const data = await res.json()
+            setTunnelStatus(data.status === 'connected' ? 'online' : 'offline')
         } catch (error) {
-            console.error('Failed to probe tunnel health', error)
+            console.error('Failed to probe tunnel health:', error)
             setTunnelStatus('offline')
         }
-    }
+    }, [])
 
     useEffect(() => {
-        let mounted = true
+        checkTunnelHealth()
 
-        const fetchHealth = async () => {
-            try {
-                const res = await fetch('/api/health')
-                const data = await res.json()
-                if (mounted) {
-                    setTunnelStatus(data.status === 'connected' ? 'online' : 'offline')
-                }
-            } catch {
-                if (mounted) setTunnelStatus('offline')
-            }
-        }
-
-        fetchHealth()
-
-        // Simulate minor site usage fluctuations
+        // TODO: Replace this mock interval with a real fetch to Supabase or Impro API
+        // Simulate minor site usage fluctuations for demonstration
         const interval = setInterval(() => {
             setSitesUsed(prev => Math.min(prev + Math.floor(Math.random() * 3) - 1, MAX_SITES))
         }, 10000)
 
         return () => {
-            mounted = false
             clearInterval(interval)
         }
-    }, [])
+    }, [checkTunnelHealth])
 
     const sitesPercentage = (sitesUsed / MAX_SITES) * 100
     const isNearingCapacity = sitesPercentage > 85
@@ -78,6 +66,7 @@ export default function SuperAdminDashboard() {
                         <button
                             onClick={checkTunnelHealth}
                             disabled={tunnelStatus === 'checking'}
+                            aria-label="Refresh tunnel health"
                             className="p-2 rounded-lg bg-secondary/50 hover:bg-secondary text-muted-foreground transition-all disabled:opacity-50"
                         >
                             <RefreshCw className={`h-4 w-4 ${tunnelStatus === 'checking' ? 'animate-spin text-primary' : ''}`} />
