@@ -9,14 +9,13 @@ export default function SuperAdminDashboard() {
     const MAX_SITES = 2000
 
     const checkTunnelHealth = useCallback(async () => {
+        // State update removed from here to fix ESLint react-hooks/set-state-in-effect
         try {
             const res = await fetch('/api/health')
-
             if (!res.ok && res.status >= 500) {
                 setTunnelStatus('offline')
                 return
             }
-
             const data = await res.json()
             setTunnelStatus(data.status === 'connected' ? 'online' : 'offline')
         } catch (error) {
@@ -24,30 +23,21 @@ export default function SuperAdminDashboard() {
             setTunnelStatus('offline')
         }
     }, [])
-
     useEffect(() => {
-        let mounted = true
         checkTunnelHealth()
-
         const fetchCapacity = async () => {
             try {
                 const res = await fetch('/api/capacity')
-                if (res.ok) {
-                    const data = await res.json()
-                    if (mounted && data.count !== undefined) {
-                        setSitesUsed(data.count)
-                    }
+                const data = await res.json()
+                if (data.count !== undefined) {
+                    setSitesUsed(data.count)
                 }
             } catch (error) {
-                console.error('Failed to fetch true capacity:', error)
+                console.error('Failed to fetch capacity:', error)
             }
         }
 
         fetchCapacity()
-
-        return () => {
-            mounted = false
-        }
     }, [checkTunnelHealth])
 
     const sitesPercentage = (sitesUsed / MAX_SITES) * 100

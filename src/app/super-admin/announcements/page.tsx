@@ -3,11 +3,22 @@ import { Megaphone, Send, Clock, Trash2 } from 'lucide-react'
 import { revalidatePath } from 'next/cache'
 import { formatDistanceToNow } from 'date-fns'
 
+interface Profile {
+    full_name: string | null
+}
+
+interface Announcement {
+    id: string
+    message: string
+    created_at: string
+    profiles: Profile | Profile[] | null
+}
+
 export default async function AnnouncementsPage() {
     const supabase = await createClient()
 
     // Fetch announcements
-    const { data: announcements } = await supabase
+    const { data: announcementsData } = await supabase
         .from('announcements')
         .select(`
             id,
@@ -19,27 +30,50 @@ export default async function AnnouncementsPage() {
         `)
         .order('created_at', { ascending: false })
 
+    const announcements = (announcementsData as unknown as Announcement[]) || []
+
     async function handlePostAnnouncement(formData: FormData) {
         'use server'
-        const supabase = await createClient()
-        const message = formData.get('message') as string
+        try {
+            const supabase = await createClient()
+            const message = formData.get('message') as string
 
-        const { data: userData } = await supabase.auth.getUser()
-        if (!userData.user || !message) return
+            const { data: userData, error: userError } = await supabase.auth.getUser()
 
-        await supabase.from('announcements').insert({
-            message,
-            author_id: userData.user.id
-        })
+            if (userError || !userData.user) {
+                console.error('Authentication required to post announcements:', userError)
+                return
+            }
 
-        revalidatePath('/super-admin/announcements')
+            if (!message || message.trim() === '') {
+                return;
+            }
+
+            const { error } = await supabase.from('announcements').insert({
+                message,
+                author_id: userData.user.id
+            })
+
+            if (error) throw error
+
+            revalidatePath('/super-admin/announcements')
+        } catch (error) {
+            console.error('Failed to post announcement:', error)
+        }
     }
 
     async function handleDelete(id: string) {
         'use server'
-        const supabase = await createClient()
-        await supabase.from('announcements').delete().eq('id', id)
-        revalidatePath('/super-admin/announcements')
+        try {
+            const supabase = await createClient()
+            const { error } = await supabase.from('announcements').delete().eq('id', id)
+
+            if (error) throw error
+
+            revalidatePath('/super-admin/announcements')
+        } catch (error) {
+            console.error('Failed to delete announcement:', error)
+        }
     }
 
     return (
@@ -56,38 +90,44 @@ export default async function AnnouncementsPage() {
 
             {/* Announcements Feed */}
             <div className="flex-1 overflow-y-auto space-y-4 pr-2">
-                {announcements?.length === 0 ? (
+                {announcements.length === 0 ? (
                     <div className="text-center py-16 glass-card rounded-2xl border border-border/50">
                         <Megaphone className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
                         <p className="text-muted-foreground font-medium">No active announcements.</p>
                         <p className="text-sm text-muted-foreground/70">Broadcast a message below to reach all users.</p>
                     </div>
                 ) : (
-                    announcements?.map((announcement: { id: string, message: string, created_at: string, profiles: unknown }) => (
-                        <div key={announcement.id} className="relative group glass-card rounded-2xl p-6 border border-border/50 pl-0 overflow-hidden">
-                            {/* Accent line */}
-                            <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary" />
+                    announcements.map((announcement) => {
+                        const profileName = Array.isArray(announcement.profiles)
+                            ? announcement.profiles[0]?.full_name
+                            : announcement.profiles?.full_name;
 
-                            <div className="pl-6 pr-12">
-                                <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3 uppercase tracking-wider font-semibold">
-                                    <Clock className="h-3.5 w-3.5" />
-                                    <span>{formatDistanceToNow(new Date(announcement.created_at), { addSuffix: true })}</span>
-                                    <span className="px-2">—</span>
-                                    <span>Posted by {(Array.isArray(announcement.profiles) ? (announcement.profiles[0] as { full_name?: string })?.full_name : (announcement.profiles as { full_name?: string })?.full_name) || 'Admin'}</span>
+                        return (
+                            <div key={announcement.id} className="relative group glass-card rounded-2xl p-6 border border-border/50 pl-0 overflow-hidden">
+                                {/* Accent line */}
+                                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary" />
+
+                                <div className="pl-6 pr-12">
+                                    <div className="flex items-center gap-2 text-xs text-muted-foreground mb-3 uppercase tracking-wider font-semibold">
+                                        <Clock className="h-3.5 w-3.5" />
+                                        <span>{formatDistanceToNow(new Date(announcement.created_at), { addSuffix: true })}</span>
+                                        <span className="px-2">—</span>
+                                        <span>Posted by {profileName || 'Admin'}</span>
+                                    </div>
+                                    <p className="text-foreground text-sm leading-relaxed whitespace-pre-wrap">
+                                        {announcement.message}
+                                    </p>
                                 </div>
-                                <p className="text-foreground text-sm leading-relaxed whitespace-pre-wrap">
-                                    {announcement.message}
-                                </p>
-                            </div>
 
-                            {/* Delete Button (Hover) */}
-                            <form action={handleDelete.bind(null, announcement.id)} className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button type="submit" className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors" title="Delete Announcement">
-                                    <Trash2 className="h-5 w-5" />
-                                </button>
-                            </form>
-                        </div>
-                    ))
+                                {/* Delete Button (Hover) */}
+                                <form action={handleDelete.bind(null, announcement.id)} className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button type="submit" className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-lg transition-colors" title="Delete Announcement">
+                                        <Trash2 className="h-5 w-5" />
+                                    </button>
+                                </form>
+                            </div>
+                        )
+                    })
                 )}
             </div>
 
