@@ -9,7 +9,7 @@ export default function SuperAdminDashboard() {
     const MAX_SITES = 2000
 
     const checkTunnelHealth = useCallback(async () => {
-        // State update removed from here to fix ESLint react-hooks/set-state-in-effect
+        setTunnelStatus('checking')
         try {
             const res = await fetch('/api/health')
             if (!res.ok && res.status >= 500) {
@@ -24,7 +24,19 @@ export default function SuperAdminDashboard() {
         }
     }, [])
     useEffect(() => {
-        checkTunnelHealth()
+        const initHealthCheck = async () => {
+            try {
+                const res = await fetch('/api/health')
+                if (!res.ok && res.status >= 500) {
+                    setTunnelStatus('offline')
+                    return
+                }
+                const data = await res.json()
+                setTunnelStatus(data.status === 'connected' ? 'online' : 'offline')
+            } catch {
+                setTunnelStatus('offline')
+            }
+        }
         const fetchCapacity = async () => {
             try {
                 const res = await fetch('/api/capacity')
@@ -36,9 +48,9 @@ export default function SuperAdminDashboard() {
                 console.error('Failed to fetch capacity:', error)
             }
         }
-
+        initHealthCheck()
         fetchCapacity()
-    }, [checkTunnelHealth])
+    }, [])
 
     const sitesPercentage = (sitesUsed / MAX_SITES) * 100
     const isNearingCapacity = sitesPercentage > 85
@@ -64,7 +76,7 @@ export default function SuperAdminDashboard() {
                             Tunnel Health Monitor
                         </h2>
                         <button
-                            onClick={() => { setTunnelStatus('checking'); checkTunnelHealth(); }}
+                            onClick={checkTunnelHealth}
                             disabled={tunnelStatus === 'checking'}
                             aria-label="Refresh tunnel health"
                             className="p-2 rounded-lg bg-secondary/50 hover:bg-secondary text-muted-foreground transition-all disabled:opacity-50"
