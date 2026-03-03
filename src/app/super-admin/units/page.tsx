@@ -1,5 +1,4 @@
 import { createClient } from '@/lib/supabase/server'
-import { adminAuthClient } from '@/lib/supabase/admin'
 import { Building, Plus, Users, Search } from 'lucide-react'
 import { revalidatePath } from 'next/cache'
 
@@ -69,6 +68,9 @@ export default async function UnitManagementPage(props: { searchParams: Promise<
             const unit_id = formData.get('unit_id') as string
 
             if (!email || !unit_id) return
+
+            // Dynamically import the admin client ONLY on the server during action execution
+            const { adminAuthClient } = await import('@/lib/supabase/admin')
 
             const { error } = await adminAuthClient.auth.admin.inviteUserByEmail(email, {
                 data: {

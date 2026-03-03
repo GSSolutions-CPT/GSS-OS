@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { QRCodeDisplay } from '@/components/QRCodeDisplay'
 import { RevokeButton } from './RevokeButton'
 import { ResendButton } from './ResendButton'
+import { redirect } from 'next/navigation'
 
 type AccessWindow = {
     id: string
@@ -12,13 +13,29 @@ type AccessWindow = {
     end_time: string
 }
 
+interface Visitor {
+    id: string
+    visitor_name: string
+    visitor_email: string
+    status: string
+    pin_code: string | null
+    needs_parking: boolean
+    credential_number: number
+    visitor_access_windows: AccessWindow[]
+}
+
 export default async function DashboardPage() {
     const supabase = await createClient()
 
-    await supabase.auth.getUser()
+    const { data: { user } } = await supabase.auth.getUser()
 
-    // Fetch visitors with their access windows
-    const { data: visitors } = await supabase
+    // Redirect if no active user session
+    if (!user) {
+        redirect('/login')
+    }
+
+    // Fetch visitors with their access windows, explicitly filtered by host_id
+    const { data: visitorsData, error: visitorsError } = await supabase
         .from('visitors')
         .select(`
             *,
@@ -26,7 +43,14 @@ export default async function DashboardPage() {
                 id, access_date, start_time, end_time
             )
         `)
+        .eq('host_id', user.id)
         .order('created_at', { ascending: false })
+
+    if (visitorsError) {
+        console.error('Failed to fetch visitors data:', visitorsError)
+    }
+
+    const visitors = visitorsData as Visitor[] | null
 
     function formatAccessPeriod(windows: AccessWindow[] | undefined | null): string {
         if (!windows || windows.length === 0) return 'N/A'
@@ -85,7 +109,13 @@ export default async function DashboardPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {!visitors || visitors.length === 0 ? (
+                            {visitorsError ? (
+                                <tr>
+                                    <td colSpan={4} className="px-6 py-8 text-center text-destructive">
+                                        Failed to load visitors. Please try again later.
+                                    </td>
+                                </tr>
+                            ) : !visitors || visitors.length === 0 ? (
                                 <tr>
                                     <td colSpan={4} className="px-6 py-8 text-center text-muted-foreground">
                                         No visitors found. Click &apos;Invite Visitor&apos; to add one.
@@ -103,17 +133,14 @@ export default async function DashboardPage() {
                                                 <CalendarDays className="h-4 w-4 text-primary mt-0.5 shrink-0" />
                                                 <div>
                                                     <div className="font-medium text-foreground text-xs">
-                                                        {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                                                        {formatAccessPeriod((visitor as any).visitor_access_windows)}
+                                                        {formatAccessPeriod(visitor.visitor_access_windows)}
                                                     </div>
-                                                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                                                    {(visitor as any).visitor_access_windows?.length > 1 && (
+                                                    {visitor.visitor_access_windows?.length > 1 && (
                                                         <div className="text-[10px] text-muted-foreground mt-0.5">
-                                                            {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                                                            {(visitor as any).visitor_access_windows
+                                                            {visitor.visitor_access_windows
                                                                 .slice()
-                                                                .sort((a: AccessWindow, b: AccessWindow) => a.access_date.localeCompare(b.access_date))
-                                                                .map((w: AccessWindow) => (
+                                                                .sort((a, b) => a.access_date.localeCompare(b.access_date))
+                                                                .map((w) => (
                                                                     <div key={w.id}>
                                                                         {new Date(w.access_date + 'T00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
                                                                         {': '}{w.start_time}–{w.end_time}
