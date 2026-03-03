@@ -1,12 +1,28 @@
 import { createClient } from '@/lib/supabase/server'
+import { adminAuthClient } from '@/lib/supabase/admin'
 import { Building, Plus, Users, Search } from 'lucide-react'
 import { revalidatePath } from 'next/cache'
 
-export default async function UnitManagementPage() {
+interface Profile {
+    id: string
+    full_name: string
+    email: string
+}
+
+interface Unit {
+    id: string
+    name: string
+    type: string
+    profiles: Profile[]
+}
+
+export default async function UnitManagementPage(props: { searchParams: Promise<{ query?: string }> }) {
+    const searchParams = await props.searchParams;
+    const query = searchParams?.query || '';
+
     const supabase = await createClient()
 
-    // Fetch units and perform a join with profiles to count group admins per unit
-    const { data: units } = await supabase
+    let unitsQuery = supabase
         .from('units')
         .select(`
             id,
@@ -21,24 +37,52 @@ export default async function UnitManagementPage() {
         `)
         .order('name', { ascending: true })
 
-    async function handleAddUnit(formData: FormData) {
-        'use server'
-        const supabase = await createClient()
-        const name = formData.get('name') as string
-        const type = formData.get('type') as string
-
-        if (!name || !type) return
-
-        await supabase.from('units').insert({ name, type })
-        revalidatePath('/super-admin/units')
+    if (query) {
+        unitsQuery = unitsQuery.ilike('name', `%${query}%`)
     }
 
-    // In a real application, adding a user requires the Supabase Service Role Key to bypass auth requirements.
-    // This is strictly a UI mockup of the functionality for Phase 2 demonstration.
+    const { data: unitsData } = await unitsQuery;
+    const units = (unitsData as unknown as Unit[]) || [];
+
+    async function handleAddUnit(formData: FormData) {
+        'use server'
+        try {
+            const supabase = await createClient()
+            const name = formData.get('name') as string
+            const type = formData.get('type') as string
+
+            if (!name || !type) return
+
+            const { error } = await supabase.from('units').insert({ name, type })
+            if (error) throw error
+
+            revalidatePath('/super-admin/units')
+        } catch (error) {
+            console.error('Failed to add unit:', error)
+        }
+    }
+
     async function handleMockCreateAdmin(formData: FormData) {
         'use server'
-        console.log('Mock creating user:', formData.get('email'), 'for unit:', formData.get('unit_id'))
-        // Implementation requires Service Role key and supabase admn.auth.createUser
+        try {
+            const email = formData.get('email') as string
+            const unit_id = formData.get('unit_id') as string
+
+            if (!email || !unit_id) return
+
+            const { error } = await adminAuthClient.auth.admin.inviteUserByEmail(email, {
+                data: {
+                    role: 'group_admin',
+                    unit_id: unit_id
+                }
+            })
+
+            if (error) throw error
+
+            revalidatePath('/super-admin/units')
+        } catch (error) {
+            console.error('Failed to provision admin:', error)
+        }
     }
 
     return (
@@ -101,24 +145,26 @@ export default async function UnitManagementPage() {
                 {/* Units List */}
                 <div className="lg:col-span-2 space-y-4">
 
-                    <div className="relative">
+                    <form method="GET" action="/super-admin/units" className="relative">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <input
                             type="text"
+                            name="query"
+                            defaultValue={query}
                             placeholder="Search units..."
                             className="input-field pl-10 bg-background/50"
                         />
-                    </div>
+                    </form>
 
-                    {units?.length === 0 ? (
+                    {units.length === 0 ? (
                         <div className="text-center py-12 glass-card rounded-2xl border border-border/50">
                             <Building className="h-12 w-12 text-muted-foreground/30 mx-auto mb-3" />
-                            <p className="text-muted-foreground font-medium">No units created yet.</p>
-                            <p className="text-sm text-muted-foreground/70">Use the form to add the first unit.</p>
+                            <p className="text-muted-foreground font-medium">No units found.</p>
+                            <p className="text-sm text-muted-foreground/70">{query ? 'Try adjusting your search query.' : 'Use the form to add the first unit.'}</p>
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            {units?.map((unit: { id: string, name: string, type: string, profiles: { id: string, full_name: string, email: string }[] }) => (
+                            {units.map((unit) => (
                                 <div key={unit.id} className="glass-card rounded-xl p-5 border border-border/50 hover:bg-white/5 transition-colors">
                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                         <div>
@@ -151,7 +197,7 @@ export default async function UnitManagementPage() {
 
                                     {unit.profiles && unit.profiles.length > 0 && (
                                         <div className="mt-4 pt-4 border-t border-border/30 grid gap-2">
-                                            {unit.profiles.map((profile: { id: string, full_name: string, email: string }) => (
+                                            {unit.profiles.map((profile) => (
                                                 <div key={profile.id} className="flex items-center gap-2 text-sm text-muted-foreground">
                                                     <Users className="h-3 w-3 text-primary" />
                                                     <span className="text-foreground">{profile.full_name || 'Unnamed Admin'}</span>
