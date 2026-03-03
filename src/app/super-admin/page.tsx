@@ -9,7 +9,6 @@ export default function SuperAdminDashboard() {
     const MAX_SITES = 2000
 
     const checkTunnelHealth = useCallback(async () => {
-        setTunnelStatus('checking')
         try {
             const res = await fetch('/api/health')
 
@@ -27,16 +26,27 @@ export default function SuperAdminDashboard() {
     }, [])
 
     useEffect(() => {
+        let mounted = true
         checkTunnelHealth()
 
-        // TODO: Replace this mock interval with a real fetch to Supabase or Impro API
-        // Simulate minor site usage fluctuations for demonstration
-        const interval = setInterval(() => {
-            setSitesUsed(prev => Math.min(prev + Math.floor(Math.random() * 3) - 1, MAX_SITES))
-        }, 10000)
+        const fetchCapacity = async () => {
+            try {
+                const res = await fetch('/api/capacity')
+                if (res.ok) {
+                    const data = await res.json()
+                    if (mounted && data.count !== undefined) {
+                        setSitesUsed(data.count)
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to fetch true capacity:', error)
+            }
+        }
+
+        fetchCapacity()
 
         return () => {
-            clearInterval(interval)
+            mounted = false
         }
     }, [checkTunnelHealth])
 
@@ -64,7 +74,7 @@ export default function SuperAdminDashboard() {
                             Tunnel Health Monitor
                         </h2>
                         <button
-                            onClick={checkTunnelHealth}
+                            onClick={() => { setTunnelStatus('checking'); checkTunnelHealth(); }}
                             disabled={tunnelStatus === 'checking'}
                             aria-label="Refresh tunnel health"
                             className="p-2 rounded-lg bg-secondary/50 hover:bg-secondary text-muted-foreground transition-all disabled:opacity-50"
