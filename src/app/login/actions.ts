@@ -21,6 +21,28 @@ export async function login(formData: FormData) {
         return { error: error.message }
     }
 
-    revalidatePath('/dashboard')
-    redirect('/dashboard')
+    // Fetch the authenticated user's profile to determine role-based routing
+    const { data: userData } = await supabase.auth.getUser()
+    const userId = userData?.user?.id
+
+    let redirectPath = '/dashboard'
+
+    if (userId) {
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('role')
+            .eq('id', userId)
+            .single()
+
+        if (profile) {
+            if (profile.role === 'super_admin') {
+                redirectPath = '/super-admin'
+            } else if (profile.role === 'guard') {
+                redirectPath = '/guard'
+            }
+        }
+    }
+
+    revalidatePath(redirectPath)
+    redirect(redirectPath)
 }
