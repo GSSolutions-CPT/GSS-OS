@@ -13,9 +13,15 @@ export default function LoginPage() {
     async function handleSubmit(formData: FormData) {
         setIsLoading(true)
         setError(null)
-        const res = await login(formData)
-        if (res?.error) {
-            setError(res.error)
+        try {
+            const res = await login(formData)
+            if (res?.error) {
+                setError(res.error)
+            }
+        } catch (err) {
+            console.error('Network drop or server crash during login:', err)
+            setError('System error. Please verify your connection or try again.')
+        } finally {
             setIsLoading(false)
         }
     }

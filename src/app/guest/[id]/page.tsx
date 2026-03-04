@@ -10,15 +10,27 @@ type AccessWindow = {
     end_time: string
 }
 
+type UnitData = { name?: string; type?: string }
+
+interface GuestVisitor {
+    id: string
+    visitor_name: string
+    credential_number: number
+    pin_code: string
+    status: string
+    units: UnitData | UnitData[] | null
+    visitor_access_windows: AccessWindow[] | null
+}
+
 export default async function GuestPassPage({ params }: { params: Promise<{ id: string }> }) {
     const supabase = await createClient()
 
     const { id } = await params
 
-    const { data: visitor } = await supabase
+    const { data: rawVisitor, error: visitorError } = await supabase
         .from('visitors')
         .select(`
-            *,
+            id, visitor_name, credential_number, pin_code, status,
             units (name, type),
             visitor_access_windows (
                 access_date, start_time, end_time
@@ -27,12 +39,23 @@ export default async function GuestPassPage({ params }: { params: Promise<{ id: 
         .eq('id', id)
         .single()
 
-    if (!visitor) notFound()
+    if (visitorError) {
+        console.error('Failed to fetch guest visitor data:', visitorError)
+        notFound()
+    }
 
-    const { data: settings } = await supabase
+    if (!rawVisitor) notFound()
+
+    const visitor = rawVisitor as unknown as GuestVisitor
+
+    const { data: settings, error: settingsError } = await supabase
         .from('building_settings')
-        .select('*')
+        .select('house_rules, wifi_ssid, wifi_password, check_in_time, check_out_time')
         .single()
+
+    if (settingsError && settingsError.code !== 'PGRST116') {
+        console.error('Database connection dropped checking building properties', settingsError)
+    }
 
     const defaultSettings = {
         house_rules: '1. No noise after 10PM.\n2. No littering in common areas.\n3. Residents responsible for guest behaviour.',
@@ -44,13 +67,13 @@ export default async function GuestPassPage({ params }: { params: Promise<{ id: 
 
     const activeSettings = settings || defaultSettings
     const isRevoked = visitor.status === 'revoked'
+
     const unitName = Array.isArray(visitor.units)
         ? visitor.units[0]?.name
-        : (visitor.units as unknown as { name?: string })?.name || 'Unknown Unit'
+        : visitor.units?.name
 
     // Get sorted access windows
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rawWindows = (visitor as any).visitor_access_windows as AccessWindow[] | null
+    const rawWindows = visitor.visitor_access_windows
     const accessWindows: AccessWindow[] = rawWindows
         ? [...rawWindows].sort((a, b) => a.access_date.localeCompare(b.access_date))
         : []
