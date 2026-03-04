@@ -1,20 +1,28 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState } from 'react'
+import { resendCredential } from './actions'
 import { RefreshCcw, Check } from 'lucide-react'
 
 export function ResendButton({ visitorId }: { visitorId: string }) {
-    const [isPending, startTransition] = useTransition()
+    const [isPending, setIsPending] = useState(false)
     const [done, setDone] = useState(false)
 
-    const handleResend = () => {
-        startTransition(async () => {
-            // Mocking a server action for resending an SMS/Email link
-            console.log(`Resending link to visitor: ${visitorId}`)
-            await new Promise((resolve) => setTimeout(resolve, 800))
+    const handleResend = async () => {
+        setIsPending(true)
+        try {
+            const result = await resendCredential(visitorId)
+            if (result.error) {
+                alert(result.error)
+                return
+            }
             setDone(true)
             setTimeout(() => setDone(false), 2000)
-        })
+        } catch (error: unknown) {
+            alert((error as Error)?.message || 'Failed to resend credential')
+        } finally {
+            setIsPending(false)
+        }
     }
 
     if (done) {
