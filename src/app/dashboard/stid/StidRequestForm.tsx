@@ -12,14 +12,17 @@ export default function StidRequestForm() {
     async function handleSubmit(formData: FormData) {
         setIsSubmitting(true)
         setError(null)
-        try {
-            await submitStidRequest(formData)
-            setIsSuccess(true)
-        } catch (error) {
-            setError(error instanceof Error ? error.message : 'Failed to submit request')
-        } finally {
-            setIsSubmitting(false)
+
+        const result = await submitStidRequest(formData)
+
+        setIsSubmitting(false)
+
+        if (result?.error) {
+            setError(result.error)
+            return
         }
+
+        setIsSuccess(true)
     }
 
     if (isSuccess) {
