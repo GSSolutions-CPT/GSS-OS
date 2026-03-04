@@ -1,0 +1,1171 @@
+Portal 
+Application Programming Interface
+Table of Contents
+Introduction:4
+Requirements:4
+Database Mapping table4
+Connecting to API Message Server:5
+Connect using XML (Java)5
+Connect using .NET5
+Via RESTful Servlet5
+Logging in via Rest6
+Sending messages to the API6
+Listening for live transactions7
+Listen via XML (Java)7
+Register and listen using .NET7
+Live Transaction Sample7
+API XML Message8
+protocol9
+Atrributes9
+Child nodes9
+apilogin10
+Attributes10
+alarm10
+Attributes10
+dbsearch11
+Attributes11
+Elements11
+dbupdate13
+Attributes13
+Elements13
+error16
+Attributes16
+Iprxmessage17
+Attributes17
+Command19
+Attributes19
+Elements19
+Request List of Alarms19
+Request List of Transactions20
+Appendix A25
+Troubleshooting (FAQ)25
+Terminal emulator does not connect to Access Portal socket 1001025
+How do I..25
+Monitor if a controller goes offline25
+Stop receiving live transactions25
+Best practice25
+Do not delete a Master record.25
+Keep track of replies25
+Basic Functions26
+Tagholders:26
+Add Tagholder26
+Add Visitor with a tag27
+Add new Custom Field for an existing Tagholder28
+Add Access Groups with start and expiry29
+Link an Asset (Visitor) to a Tagholder30
+Add Image to tagholder30
+Add Biometrics31
+Hardware Functions32
+Set Terminal/Controller’s threat level32
+HQL Queries32
+Here is an example of SQL to HQL.32
+Broadcast Transaction filtering35
+Change Log36
+V5.036
+V4.6537
+V4.2.0(Patch)37
+V4.2.037
+V4.0038
+V3.0438
+V3.0038
+V2.2038
+V2.0038
+Introduction:
+This document provides instructions for integrating with the Access Portal system through its Application Programming Interface (API). Any third-party integrations requiring database modifications (such as adding, editing, or deleting users, tags, etc.) should exclusively carry out these operations via this designated interface. Making direct modifications to the database records will cause inconsistencies between the Access Portal web server and the SQL Server database. There are two available methods to connect to the Portal API: utilizing the lower-level TCP socket with XML or employing a .NET wrapper dll. The .NET option handles TCP socket messaging and XML to POCO conversion.
+Requirements:
+To utilize the API, a valid license is necessary. Three tiers of licenses are offered for selection.
+Full license: 10 sessions are available.
+Visitor management License: 2 sessions are available.
+Time & attendance License: 1 session is available.
+To manage the sessions, we have added a logout command via REST and the .Net wrapper.
+The tables accessible per license are as follows. 
+Full License - 10 sessions. No table limit.
+Visitor Management – 2 sessions. Table access for the VisitorManagment license: ("master", "tag", "tagtype", "transack", "company", "department", "site", "profile", "masterimagetype", "masterimagelwthumb", "masterimage", "mastergroup", "masterdetailtype", "masterdetaillookup", "masterdetailgrouptype", "masterdetail", "masterasset", "accessgroup")
+Time and attendance – 1 session. Table access for the T&A license ("master", "tag", "transack", "eventtype", "company", "department", "site", "area", "arealocation", "floor", "terminal", "location", "deviceimprox", "mastergroup", "masterdetailtype", "masterdetaillookup", "masterdetailgrouptype", "masterdetail")
+Note: Sessions are active connected logins via the API
+The mapping document provided below serves as a helpful resource for understanding the table layout and mapping procedures.
+Database Mapping table
+Connecting to API Message Server:
+The code below will connect your client application to the Access Portal API Message Server.
+Please be aware that the IP address must be configured to match the address of the portal application server.
+Connect using XML (Java)
+    try {
+      // Access Portal IP address, port
+      socket = new Socket("127.0.0.1", 10010);
+    }
+    catch (Exception e) {
+      System.out.println("Invalid IP Address or Portal not running");
+    }
+Connect using .NET
+A .NET wrapper all is available, which objectifies the API XML messages and handles the underlying TCP Socket communication to simplify the integrating to the Access Portal API.
+       // Application name, non-secure, debugging on
+       PortalAPI api = new PortalAPI("test", false, true);
+       try {
+           // Access Portal IP address, portnumber, message timeout
+           api.connect("1270.0.1", 10010, 5000);
+       } catch (Exception e) {
+           Console.WriteLine("Invalid IP Address or Portal not running");
+           Environment.Exit(1);
+       }
+// set login credentials
+userLogin l = api.login("sysdba", Encoding.UTF8.GetBytes("masterkey"));
+Via RESTful Servlet
+You can access the api via a RESTful servlet found at /portal/api/xml url. E.g. https://127.0.0.1/portal/api/xml.
+A POST request is used for logging into Access Portal.
+curl --location --request POST 'https://127.0.0.1/api/xml' \
+--header 'Content-Type: application/xml' \
+--header 'name: sysdba' \
+--header 'pswd: bWFzdGVya2V5'
+Please note that the token, which is the session required for subsequent calls, will be received upon making the REST POST call. Upon receiving a response message with headers, the token necessary for further calls will be included in these headers. It is essential to include this token in all subsequent calls.
+Note: if you use 2 different URLs for example https://localhost and https://127.0.0.1 it will not work since the call used a different route.
+XML Message
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <apilogin login="SYSDBA" password="bWFzdGVya2V5" appname="TestApp" />
+</protocol>
+Logging in via Rest
+Create an HTTP connection to the RESTful servlet with a POST request.
+The headers should contain the following:
+Content-Typeapplication/xml
+namesysdba
+pswdbWFzdGVya2V5
+The returned message will contain an extra header key token with a value, which needs to be sent with all API message calls in any proceeding POST messages.
+Sending messages to the API
+Once the token has been extracted from the previous POST request, create a PUT request with the following headers:
+Within the body of the http request, add the API XML message you wish to send. Note the message need not be NULL terminated. The API XML reply message will be returned within the body of the Http reply.
+curl --location --request PUT 'https://127.0.0.1/portal/api/xml' \
+--header 'Content-Type: application/xml' \
+--header 'token: 66768842-cfbe-49d5-a64c-28546bbdd41d' \
+--data '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="82945242" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <dbsearch searchQuery="select m from Master m" recordCount="10">
+  </dbsearch>
+</protocol>'
+Within the body of the http request, add the API XML message you wish to send. Note the message need not be NULL terminated. The API XML reply message will be returned within the body of the Http reply.
+Listening for live transactions
+Access Portal continually transmits live transactions gathered from the controllers.
+Listen via XML (Java)
+Create a thread that continually reads from a socket and waits for NULL character.
+        StringBuilder sb = new StringBuilder();
+        // continuously read from input stream
+        while (true) {
+          // if data exist in input stream, read
+          if (in.available() > 0) {
+            byte[] b = new byte[in.available()];
+            in.read(b);
+            String s = new String(b);
+            while (s != null) {
+              // check if null terminated
+              int indexOfNull = s.indexOf("\0");
+              // if not build string
+              if (indexOfNull == -1) {
+                sb.append(s);
+                s = null;
+              }
+              else {
+                // if null found process until null character
+                sb.append(s.substring(0, indexOfNull++));
+                // send received message to console
+                System.out.println(sb.toString());
+                sb = new StringBuilder();
+                // append remaining characters for next message
+                s = s.substring(indexOfNull);
+              }
+            }
+          }
+          else {
+            Thread.sleep(100);
+          }
+        }
+Register and listen using .NET
+Let your class implement the TransackListener and register this class as a listener.
+        public void InitTransactionListener() {
+            // this implements TransactionListener
+            api.registerListener(this);
+      api.sendCommand("1", "22", "", "", true);
+        }
+        public void onTransackReceived(transack transaction) {
+            // handle received transaction
+        }
+Live Transaction Sample
+As you can see, all information you would need, including the person’s image (if any) will be sent via the API. There is no need to query any more information regarding that transaction.
+NOTE: a withclause can be added to the sendCommand which will include extra fields, if necessary, on the live transactions message. 
+Example:
+ string[] withClauseTR = { "masterByTrMasterId", "masterByTrMasterId.tags" };
+sendCommand("1", "22", "", "", true, withClauseTR);
+API XML Message
+All API XML messages are wrapped within a ‘protocol’ element and are terminated by a NULL (0x00) character, which acts as a message separator. The illustration below summarises the protocol elements and its child element (commands) that can be issue to manipulate the API. It also give a brief description of their purpose. 
+This protocol xsd below describes the API XML Message composition and XML parsing validation. Currently the API is lenient on the XML packet received, to assist with minimising the size and processes needed to build up a fully populated XML packet. For example, if you wish to update the Master’s Displayname, instead of building the entire validated xml with all the MasterType, MasterGroup, Site, Tags, etc., elements associated with the Master, you can just send the master ‘id’ together with the ‘displayName’ attribute and new value, to save the change.
+Protocol XSD
+PS. All fields and elements are case sensitive.
+protocol
+Description
+This is the root XML element and commands and replies are wrapped with in it.
+Atrributes
+idThis serves as a message identifier. Response messages will correspond to the sent protocol ID. It does not necessarily need to be a unique identifier.
+versionKeeps the version of the API
+Child nodes
+Send one of the following:
+apilogin request login to the Access Portal System
+alarmrequest to acknowledge alarm/s
+commandrequest alarms or transactions or register as a listener
+dbsearchrequest to query database table
+luceneSearch request lucene searching REMOVED
+dbupdaterequest to save, update or remove records
+iprxmessagerequest to execute controller functions
+Reply one of these
+dbsearchreturns table search records
+luceneSearch returns lucene searching results
+dbupdateused to persist data to database
+errorholds the exception details
+iprxmessagereturns status of the requested function
+domainreturns generic database rows, currently only used for returning  the user login
+Broadcast one of these
+transacklive transactions
+commanddoorstatus, controller,  master changes.
+apilogin 
+Description
+This command is sent to log into Access Portal and expands the API to allow for executing controller command (iprxmesssage) and update database records (dbupdate).
+Attributes
+appnameapplication name used for debugging
+loginAccess Portal login name
+passwordAccess Portal password (base 64 encoded)
+Sample
+XML Message
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <apilogin login="SYSDBA" password="bWFzdGVya2V5" appname="TestApp" />
+</protocol>
+.NET
+// set login credentials
+       userLogin l = api.login("sysdba", Encoding.UTF8.GetBytes("masterkey"));
+alarm
+Description
+This command is used to acknowledge alarms. 
+Attributes
+alsqMust match the transaction ‘trSq’
+altrdateMust match the transaction ‘trDatetimeutc’
+aldevslaMust match the transaction ‘trSla’
+aleventid Must match the transaction ‘eventTypeId’
+alackmstId Must match the transaction ‘masterByTrMasterId’
+alackdate Current utc time
+alacktype Should be “1”
+Sample
+XML Message
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <alarm alsq="483" altrdate="2016-12-06T06:49:36.000" aldevsla="02010103" aldevname="TTK: 6F003A99" aleventid="158" aleventname="Door Open Sensing Door Open Too Long 1" alackmstId="-1" alackdate="Tue Dec 06 10:07:59 CAT 2016" alacktype="1"/>
+</protocol>
+.NET
+Not supported
+dbsearch
+Description
+This command is for running queries on the Access Portal database. The reply will have the result of the query being run (result) as well as the records found (record). This command requires a login before running a query.
+Attributes
+tableNameTable to run queries on / FOR HQL this should be used
+byIdUnique Id number of the table to query
+searchQueryLucene search query (no longer used) / HQL query
+recordCountNumber of records to return (default is 10)
+resultDisplays the result of the query that ran.
+Elements
+withClauserefer to WithClause.
+Types of searches
+Search by ID
+Requires tableName, byId, recordCount
+XML Message
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <dbsearch tableName="Master" byId="1" recordCount="100">
+  </dbsearch>
+</protocol>
+.NET
+                // lookup master with MASTER_ID = 1
+                baseDomain[] list = api.findById("Master", 1);
+                master m = (master)list[0];
+Search All
+Requires tableName, recordCount
+XML Message
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <dbsearch tableName="Master" recordCount="100">
+  </dbsearch>
+</protocol>
+.NET
+Not available.
+Lucene Search (Deprecated) 
+Requires TableName, luceneSearch where lucene search is a lucene where clause.
+XML Message
+No longer supported
+.NET
+No longer supported
+HQL Search
+Requires searchQuery and rowCount. where searchquery search contains the HQL Query. For information regarding  HQL, please refer to HQL in the Database Mappings and HQL section.
+XML Message
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <dbsearch searchQuery="select m from Master m" recordCount="100">
+  </dbsearch>
+</protocol>.NET
+dbupdate
+This commands is used of performing CRUD operations on a database. You need to be logged into the API via the apilogin command before you can perform any operations on the database.
+Attributes
+resultThis is returned and contains the result status of the dbUpdate
+ command process.
+Elements
+withClauserefer to WithClause.
+savedDomainThis is returned and contains the saved domain object after the 
+dbUpdate operation.
+<basedomain>This element that will be one of the HQL Tablename refered shown in
+the mappings spreadsheet. 
+Add, Update or Delete Records
+BaseDomain is a base object which represents a single row in any database table. All basedomains have in attribute ‘id’ which is mapped to a single composite primary key of a database table. Setting this attribute will allow the API to add, update or delete a record in thefollowing ways.
+ID States
+id = ‘0’ API will create a new record.
+id = ‘ID’API will update the record where the ID = primary key of the record.
+id = ‘-ID’API will delete the record where the ID = primary key of the record.
+id = ‘null’Used to set nullable foreign keys to NULL
+Add/Update record
+Now that the database table is identified, and the row is accounted for, the next is to change values in other database columns. This is when the mappings spreadsheet can assist again 
+Update and insert new records
+The API has support for nested add, updates or deletes.
+Example
+Update a master and insert a new tag.
+XML Message
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <dbupdate>
+    <Master id="1" current="1" displayName="Jon AKA Doe" mstExpiryDate="20161009" firstName="Jon" gender="M" idnumber="3452345" lastName="Doe" mstStartDate="20160919">
+    <tag id="0" startTime="0" startDate="0" tagCode="12345" expiryTime="0" suspendWithAlarm="0" expiryDate="0" report="1" suspend="0" ordinal="1" specialEvent="0" tagCodeUntruncated="12345">
+      <tagType id="1" />
+      <tagTypeUntruncated id="15" />
+    </tag>
+   </Master>
+  </dbupdate>
+</protocol>
+.NET
+            master m = new master();
+            // an update to master record number 1 with following values
+            m.id = "1";
+            m.current = "1";
+            m.displayName = "Jon AKA Doe";
+            m.mstExpiryDate = "20161009";
+            m.firstName = "Jon";
+            m.gender = "M";
+            m.idnumber = "34512345";
+            m.lastName = "Doe";
+            m.mstStartDate = "20160919";
+            // create tag
+            tag t = new tag();
+            // new tag
+            t.id = "0";
+            t.startTime = "0";
+            t.startDate = "0";
+            t.expiryTime = "0";
+            t.expiryDate = "0";
+            t.report = "1";
+            t.suspend = "0";
+            t.suspendWithAlarm = "0";
+            t.specialEvent = "0";
+            t.ordinal = "1";
+            t.tagCode = "12345";
+            t.tagCodeUntruncated = "12345";
+            // tagtype
+            tagType tt = new tagType();
+            tt.id = "1"; // slim tag
+            // assign tag type to tag
+            t.tagType = tt;
+            t.tagTypeUntruncated = tt;
+            // persist to Portal and return new master with new tag
+            m = api.saveOrUpdate(m);
+Delete record
+By setting the id to a negative id numer you can delete the record. This sample will remove tag with an id of 1
+XML Message
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <dbupdate>
+    <Tag id="-1"/>
+  </dbupdate>
+</protocol>
+.NET
+            // create tag object
+            tag t = new tag();
+            // set tag id 1 to be removed
+            t.id = "-1";
+            // persist to Portal
+            api.saveOrUpdate(t);
+Set Nullable foreign key to NULL
+Setting a nullable foreign key can be done by setting id=”null” of the child element.
+Example
+This sample will remove the company of master.
+XML Message
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <dbupdate>
+    <Master id="1" >
+    <company id="null" />
+   </Master>
+  </dbupdate>
+</protocol>
+.NET
+     master m = new master();
+            // remove comapny from master
+            m.id = "-1";
+            company c = new company();
+            c.id = "null";
+            m.company = c;
+            // persist to Portal
+            m = api.saveOrUpdate(m);
+Exclusions:
+MasterGroup table is unique in that the start and expiry date set by the API are set in local ISO format, and saved to the database based on UTC. 
+Example
+The statement below will assign a new MasterGroup to an existing Master with an ID of ‘3’ with a start date and time of ’04 May 2016 00h 00m 00s’ and expires at ’04 May 2016 23h 59m 59s’ with an AccessGroup of ‘2’
+XML Message
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <dbupdate>
+    <master id="3">
+    <mastergroup id="0" mgStartDateTimeLocal="2016-05-04T00:00:00" mgEndDateTimeLocal="2016-05-04T23:59:59">
+      <accessgroup id="2">
+      </accessgroup>
+    </mastergroup>
+    </master>
+  </dbupdate>
+</protocol>
+error
+Description
+This is a Returned only command and common among all command if an error occurs.
+Attributes
+descdescription of the error
+inputthe type of message that was sent
+resultfull java error code trace
+Example
+This example will throw an exeption with the response being an exception.
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <dbupdate>
+    <tag id="0" startTime="0" startDate="0" tagCode="12345" expiryTime="0" suspendWithAlarm="0" expiryDate="0" report="1" suspend="0" ordinal="1" specialEvent="0" apbOverride="0" tagCodeUntruncated="12345">
+      <tagType id="15" />
+      <tagTypeUntruncated id="15" />
+    </tag>
+  </dbupdate>
+</protocol>
+Error Response:
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <error desc="Error Constraint Violation : [Cannot have a tag without a master record,A tag with untruncated tag code : 12345 and type : Any Tag Type already exists in the database.,A tag with tag code 12345 already exists in the database.,]" input="DbUpdate[1]"/>
+</protocol>
+Iprxmessage
+Description
+This sends commands to controllers messages via the Access Portal. Ensure you have logged in using apilogin before using this command
+Attributes
+commandAny Of the following:
+EXECUTE_ACTION, OPEN_DOOR, EMERGENCY, LOCK
+stateExtra information needed for the command. Using the commands 
+above these are possible
+Controller’s action number, none, true or false, true or false.
+fixedadddescription of the error. The fixedaddress or LA of the unit you 
+wish to send a command to.
+Request Open Door 
+To open a door, requires fixedadd field set to the the terminal’s sla, define as DEV_SLA in the database.
+Sample
+Open door on terminal sla 02010103
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <iprxmessage fixedadd="02010103" command="OPEN_DOOR">
+  </iprxmessage>
+</protocol>
+Request To Execute Action
+To open execute actions a door requires a comma separated list of DEV_ACTION_ID in as the value in state.
+Sample
+Exceute actions 10, 11 and 12.
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <iprxmessage state="10,11,12" command="EXECUTE_ACTION">
+  </iprxmessage>
+</protocol>
+Request To Set Emergency Mode
+Used to set the state of a terminal’s Emergency mode.
+Sample
+Sets terminal with 02010103 to emergency mode ON.
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <iprxmessage fixedadd="02010103" state="true" command="EMERGENCY ">
+  </iprxmessage>
+</protocol>
+Request To Set Lockdown Mode
+Used to set the state of a terminal’s Lockdown mode.
+Sample
+Sets terminal with 02010103 to lockdown mode ON.
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <iprxmessage fixedadd="02010103" state="true" command="LOCK">
+  </iprxmessage>
+</protocol>
+Request To reset APB status
+Used to reset the APB status of all masters or of a single master. The value of state can contain one MASTER_ID.
+Sample
+Reset APB status on controller
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <iprxmessage fixedadd="02010100" command="APB">
+  </iprxmessage>
+</protocol>
+Sample
+Reset Master with MASTER_ID of 1 APB status on controller
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <iprxmessage fixedadd="02010100" state="1" command="APB">
+  </iprxmessage>
+</protocol>
+Request To Inject PAC
+Used to inject a tag presentation into the controllers transaction buffer.
+Sample
+Inject transaction on terminal 0057781D
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <iprxmessage fixedadd="0057781D" command="INJECT_TRANSACTION" state="74250">
+  </iprxmessage>
+</protocol>
+Command
+Description
+This command is used for various requests. 
+Attributes
+typeRefer below
+datakeeps list of propeties used for processing the command type
+Elements
+withClauserefer to WithClause.
+statusBroadcast status messages (Reply Only)
+List of command types
+type=”0”Used internally
+type=”1”Used internally
+type=”2”Request List of Alarms
+type=”3”Request List of Transactions
+type=”4”Deprecated 
+type=”5”Deprecated
+type=”6”Deprecated
+type=”7”Request Access Portal Information
+…
+type=”20”Listen for Door Status
+type=”21”Listen for Controller Status
+By default, transactions are disabled, if you require transactions you need to send the command to receive transactions.
+type=”22”Listen for Transactions
+type=”23”Listen for Master/Tag Updates
+Request List of Alarms 
+The API will return the most recent Alarms that have not been acknowledged yet.  There will be no reply and the alarms will come through like a live transaction. You can identify the alarm by the transaction reqtype=”2”
+type 2
+datakey=”maxresult” value=”?”  (optional : default = 20)
+Sample
+Will return 20 most recent unacknowledged alarms. 
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <command type="2">
+    </command>
+</protocol>
+Request List of Transactions 
+The API will return the most recent Transactions.  There will be no reply and the alarms will come through like a live transaction. You can identify the alarm by the transaction reqtype=”3”
+type 3
+datakey=”maxresult” value=”?”  (optional : default = 20)
+Sample
+Will return last 5 transactions. 
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <command type="3">
+        <data key="maxresult" value="5"/>
+    </command>
+</protocol>
+Request Access Portal Information
+The API will query the Access Portal’s revision and license details and reply with the details, saving it in the data element of the reply.
+type 7
+dataReply only:
+key="Revision" value="1.8.0.46954"
+<data key="License" value="Portal Base Enterprise"/>
+Sample
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <command type="7">
+  </command>
+</protocol>
+Listen for Door Status
+Use this to register for changes in controller door status .  By default all controllers changes will be broadcast but you can filter this by setting adding a data element and set key attribute to “controller” and the value can be a comma separated string of controller id’s.  Door Status includes, Door Sensing, Emergency, Lockdown and Unlock Open.
+type 20
+data(optional)key="controller" value="1,2" 
+key=”disable”  - To stop listening
+status (broadcast reply)list of statusDoor whitch has the controller and all the doors status.
+Each statusDoor elment will have:
+controlleridThe controller id 
+dosOpenedComma separated terminalid whose door sensing is in open state
+dosClosedComma separated terminalid whose door sensing is in closed state
+emergencyOnComma separated terminalid whose door whos emergency mode is ON
+emergencyOffComma separated terminalid whose door whos emergency mode is OFF
+lockdownOnComma separated terminalid whose door whos lockdown mode is ON
+lockdownOffComma separated terminalid whose door whos lockdown mode is OFF
+unlockOnComma separated terminalid whose door whos unlock mode is ON
+unlockOffComma separated terminalid whose door whos unlock mode is OFF
+Sample
+Register to listen
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <command type="20" />
+</protocol>
+Broadcast message
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="3" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <command id="1" type="20">
+        <status xsi:type="statusDoor" controllerid="1" dosOpen="" dosClosed="2,3," emergencyOn="" emergencyOff="2,3," lockdownOn="" lockdownOff="2,3," unlockOn="" unlockOff="2,3," statusName="Door Status"/>
+    </command>
+</protocol>>
+Listen for Controller Status 
+Use this to register for changes in controller online status.  By default all controllers changes will be broadcast but you can filter this by setting adding a data element and set key attribute to “controller” and the value can be a comma separated string of controller id’s.
+type 21
+data(optional)key="controller" value="1,2" 
+key=”disable”  - To stop listening
+status (broadcast reply)list of statusNetwork whitch has the controller and all the doors status.
+Each statusNetwork elment will have:
+statusOnline or Offline status
+devicecontroller element which has all controller details.
+Sample
+Register to listen
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <command type="21">
+        <data key="controller" value="1"/>
+    </command>
+</protocol>
+Broadcast Message
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="0" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <command id="1" type="21">
+        <status xsi:type="statusNetwork" status="Online" statusName="NetWorkStatus">
+            <device xsi:type="controller" sla="02010100" serial="09X0497449" fixedAddr="6E00F1E6" name="APC: APC" position="2" ip="192.1.7.77" port="10002" id="1">
+                <unitType name="AP" desc="Access Portal Controller" id="164"/>
+                <site name="Default Site" id="2"/>
+            </device>
+        </status>
+    </command>
+</protocol>
+Listen for Transactions 
+The API by default will broadcast all transactions from all sites. You may want to add filtering to only listen for transactions from specific site or controllers. The data can have a key of “site” and the value can be a comma separated string of site id’s.
+type 22
+data(optional)key="site" value="1,2" 
+key="disable"  - To stop listening
+key="filter" value"site=1,2" 
+- Refer to Broadcast Transaction filtering
+status (broadcast reply)list of statusNetwork whitch has the controller and all the doors status.
+Each statusNetwork elment will have:
+statusOnline or Offline status
+devicecontroller element which has all controller details.
+Sample
+Register to listen
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <command type="22">
+        <data key="site" value="2"/>
+    </command>
+</protocol>
+Broadcast Message
+These messages are the normal broadcasted live transactions as show here only filtered based on site.
+Listen for Master/Tag Updates
+Use this to register for changes in master, masterImage, tags, biotemplates.  
+type 23
+data(optional)key=”disable”  - To stop listening
+key=”audit” value=” 2018-07-18T03:14:16.000”
+(Scan audit logs for changes from UTC time)
+status (broadcast reply)statusMaster
+Each statusMaster element will have:
+mastermaster element with its tag information.
+Sample
+Register to listen
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <command type="23" />
+        <data key="audit" value="2018-07-18T03:14:16.000"/>
+    </command>
+</protocol>
+Broadcast Message
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="0" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <command id="1" type="21">
+        <status xsi:type="statusNetwork" status="Online" statusName="NetWorkStatus">
+            <device xsi:type="controller" sla="02010100" serial="09X0497449" fixedAddr="6E00F1E6" name="APC: APC" position="2" ip="192.1.7.77" port="10002" id="1">
+                <unitType name="AP" desc="Access Portal Controller" id="164"/>
+                <site name="Default Site" id="2"/>
+            </device>
+        </status>
+    </command>
+</protocol>
+Appendix A
+Troubleshooting (FAQ)
+Terminal emulator does not connect to Access Portal socket 10010.
+Check the following:
+Access Portal is running and you can connect and login from the client machine
+Firewall settings allow for connections between Access Portal and client machine on port 10010
+How do I..
+Monitor if a controller goes offline.
+Send a command message to listen for controller status.  Refer to Listen for Controller Status
+Stop receiving live transactions.
+You would need to send a command to stop listening for broadcast transactions, by setting the data element, key value to disable . Refer to Listen for Transactions.
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <command type="22">
+        <data key="disable" />
+    </command>
+</protocol>
+Best practice
+Do not delete a Master record. 
+Access Portal does not delete master records as they contain historical data. If you wish to remove a tagholder, set the ‘current’ attribute on the master to ‘0’. By doing this, you can set that tagholder to non-current which will remove the tagholder from the hardware and by default will not be shown in the tagholder view on Access Portal.
+Keep track of replies
+The protocol id is used to match the sent message with the reply. Access Portal broadcasts live transactions continually and you may have sent a message and received this broacast message first. So by checking the protocol id you will know to ignore this message.
+Basic Functions
+Tagholders:
+Add Tagholder
+Create a master record with a profile id of 16.
+XML Message
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <dbupdate>
+    <Master id="0" current="1" displayName="Jon AKA Doe" mstExpiryDate="20161009" firstName="Jon" gender="M" idnumber="3452345" lastName="Doe" mstStartDate="20160919">
+<profile id="16" /> <!—Tagholder profile -->
+<site id="2" /> <!—Site 1 -->
+   </Master>
+  </dbupdate>
+</protocol>
+.NET
+            master m = new master();
+            // create new tagholder
+            m.id = "0";
+            m.current = "1";
+            m.displayName = "Jon AKA Doe";
+            m.mstExpiryDate = "20161009";
+            m.firstName = "Jon";
+            m.gender = "M";
+            m.idnumber = "34512345";
+            m.lastName = "Doe";
+            m.mstStartDate = "20160919";
+            // tagholder profile
+            profile p = new profile();
+            p.id = "16";
+            m.profile = p;
+            // tagholder profile
+            site s = new site();
+            s.id = "2";
+            m.site = s;
+            // persist to Portal and return new master
+            m = api.saveOrUpdate(m);
+Add Visitor with a tag
+Create a master record with a profile id of 41 with a new 
+XML Message
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <dbupdate>
+    <Master id="0" current="1" displayName="Jon AKA Doe" mstExpiryDate="20161009" firstName="Jon" gender="M" idnumber="3452345" lastName="Doe" mstStartDate="20160919">
+    <tag id="0" startTime="0" startDate="0" tagCode="12345" expiryTime="0" suspendWithAlarm="0" expiryDate="0" report="1" suspend="0" ordinal="1" specialEvent="0" apbOverride="0" tagCodeUntruncated="12345">
+      <tagType id="15" /> <!— Always set this -->
+      <tagTypeUntruncated id="7" /> <!— Original Tag Type PAC -->
+    </tag>
+<profile id="41" /> <!—Visitor profile -->
+<site id="2" /> <!—Site 1 -->
+   </Master>
+  </dbupdate>
+</protocol>
+.NET
+            master m = new master();
+            // create new tagholder
+            m.id = "0";
+            m.current = "1";
+            m.displayName = "Jon AKA Doe";
+            m.mstExpiryDate = "20161009";
+            m.firstName = "Jon";
+            m.gender = "M";
+            m.idnumber = "34512345";
+            m.lastName = "Doe";
+            m.mstStartDate = "20160919";
+            // create tag
+            tag t = new tag();
+            // new tag
+            t.id = "0";
+            t.startTime = "0";
+            t.startDate = "0";
+            t.expiryTime = "0";
+            t.expiryDate = "0";
+            t.report = "1";
+            t.suspend = "0";
+            t.suspendWithAlarm = "0";
+            t.specialEvent = "0";
+            t.ordinal = "1";
+            t.tagCode = "12345";
+            t.tagCodeUntruncated = "12345";
+            // original tagtype
+            tagType tto = new tagType();
+            tto.id = "7"; // PAC code
+            // assign tag type to tag
+            t.tagTypeUntruncated = tto;
+            // any tag type
+            tagType tt = new tagType();
+            tt.id = "15"; // anytag tag
+            // assign tag type to tag
+            t.tagType = tt;
+            // visitor profile
+            profile p = new profile();
+            p.id = "41";
+            m.profile = p;
+            // tagholder profile
+            site s = new site();
+            s.id = "2";
+            m.site = s;
+            // persist to Portal and return new master
+            m = api.saveOrUpdate(m);
+Add new Custom Field for an existing Tagholder
+Create a new masterDetail record with a master detailType. A withClause is added to receive the changes made to the master. Master details are not received by default.
+XML Message
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" id="2" version="0" xmlns="http://www.identisoft.net/protocol">
+  <dbupdate id="0">
+    <master id="1">
+      <masterdetail id="0" valstring="011-1234455">
+        <detailType id="11" />
+      </masterdetail>
+   </master>
+   <withClause>masterDetails.masterDetailType</withClause>
+  </dbupdate>
+</protocol>
+.NET
+            // select master with id = 1
+            master m = new master();
+            m.id = "1";
+            // create new telephone number
+            masterDetail md = new masterDetail();
+            md.id = "0";
+            md.valstring = "011-1234455";
+            // link to type telephone numer
+            masterDetailType mdt = new masterDetailType();
+            mdt.id = "11";   // Telephone (W)
+            md.detailType = mdt;
+            // assign this number to master
+            m.masterdetail = new masterDetail[] { md };
+            string[] withClause = new string[] { "masterDetails.masterDetailType" };
+            // save
+            m = api.saveOrUpdate(m, withClause);
+Add Access Groups with start and expiry
+Give a Visitor access to Access Group with an id = 14.
+Create a new master group with a start and expiry in the format 2016-12-31T23:59:59, local time. A withClause is added to receive the changes made to the master. Master Groups are not received by default.
+XML Message
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" id="2" version="0" xmlns="http://www.identisoft.net/protocol">
+  <dbupdate id="0">
+    <master id="1">
+      <mastergroup id="0" mgEndDateTimeLocal="2016-12-08T00:00:00" mgStartDateTimeLocal="2016-12-08T00:00:00">
+        <accessgroup id="2" />
+      </mastergroup>
+    </master>
+    <withClause>masterGroups.accessGroup</withClause>
+  </dbupdate>
+</protocol>
+.NET
+            // select master with id = 1
+            master m = new master();
+            m.id = "1";
+            // create new access group
+            masterGroup mg = new masterGroup();
+            mg.id = "0";
+            // valid for two days
+            mg.mgStartDateTimeLocal = "2016-12-07T00:00:00";
+            mg.mgEndDateTimeLocal =   "2016-12-09T00:00:00";
+            // link to type telephone numer
+            accessGroup ag = new accessGroup();
+            ag.id = "2";   // Visitor Access
+            mg.accessgroup = ag;
+            // assign this number to master
+            m.mastergroup = new masterGroup[] { mg };
+            string[] withClause = new string[] { "masterGroups.accessGroup" };
+            // save
+            m = api.saveOrUpdate(m, withClause);
+Link an Asset (Visitor) to a Tagholder
+A visitor (master id = 2) to be linked to tagholder (master id = 1) by creating a master_asset record.
+XML Message
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" id="2" version="0" xmlns="http://www.identisoft.net/protocol">
+  <dbupdate id="0">
+  <masterAsset id="0">
+    <master id="1" />
+    <asset id="2" />
+  </masterAsset>
+  <withClause>master</withClause>
+  <withClause>asset</withClause>
+</dbupdate>
+</protocol>
+.NET
+     // select tagholder with master id = 1
+            master th = new master();
+            th.id = "1";
+            // select visitor with master id = 2
+            master v = new master();
+            v.id = "2";
+            // create new master asset
+            masterAsset ma = new masterAsset();
+            ma.id = "0";
+            // link
+            ma.master = th;
+            ma.asset = v;
+            
+            string[] withClause = new string[] { "master", "asset" };
+            // save
+            ma = api.saveOrUpdate(ma, withClause);
+Add Image to tagholder
+XML Message
+.NET
+            // save him
+            baseDomain[] ms =  api.findById("Master",1);
+            master m = (master) ms[0];
+            int id = m.getId();
+            // create new master image
+            masterImage mi = new masterImage();
+            // load image from c:\test.png
+            Byte[] bytes = File.ReadAllBytes("c:\\robocop.jpg");
+            mi.img64 = Convert.ToBase64String(bytes);
+            // set type to 1st portrait
+            masterImageType masterImageType = new masterImageType();
+            masterImageType.id = "1";  
+            mi.masterImageType = masterImageType;
+            // assign image
+            m.image = new masterImage[] { mi };
+            api.saveOrUpdate(m);
+Add Biometrics
+Add biometric SAGEM templates:
+Two templates are needed for enrolling templates. Below are two messages to add
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+       <dbupdate>
+        <bioTemplate id="0" btTemplateno="0"  btTemplate="024C001E56FF8080B6A8BB21A387A999AE38B7B19A88B8BF8D758F9C90A197ABA3AD66B7868F8BAE6EA6719677908380857B8370925F7A7CC5373CA337A78860408C577E6C6D845E2D8B43595C586B5E785B3272513F6C3C8550994CAA4FCC70A64ABF649AA8A4B18AA18E84788BCD4484695972287E6958BD52794C8050A15EAB5DC85E9639B266CD729447A573AE78AA2ABC85C38C9D48AF84A077A67DC8A70913C420596A1AD2D1FC67F6B5D5A28848F9">
+            <tag id="4"/> 
+            <bioTemplateFormat id="1"/> 
+        </bioTemplate>
+       </dbupdate>
+</protocol>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="2" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+       <dbupdate>
+        <bioTemplate id="0" btTemplateno="1" btTemplate="0246001B57FF80808290787471898395859C739B699F668380B270AF4B96528255784285C3954174C27AA694A386AE79B4752C71375D9B869F7DAB72B56D917DA573B661BB4E28544842949096778678AD54AF626D579A62A55FA64B6E4588388D3F8E6F80777B7D8CAC9BA8697D529F979F4A90A2A3B1856170366D425C5A598188663E6E6F75477C3B815D8B938852756F78869A2A35494783508C307CDDAABA76CF40EB" >
+            <tag id="4"/>                
+            <bioTemplateFormat id="1"/>  
+        </bioTemplate>
+       </dbupdate>
+</protocol>
+Hardware Functions
+Set Terminal/Controller’s threat level
+Set devices into a threat level.
+This can be done by simply setting the THREAT_LEVEL_ID on the DEVICE_IMPROX table.
+Database mappings and HQL
+Database Mapping table
+HQL Queries
+Access Portal uses Hibernate as its database mechanism, which allows us to connect to any DBMS, and as such, it has its own SQL language known as HQL. (https://docs.jboss.org/hibernate/orm/3.3/reference/en/html/queryhql.html).
+Refer to the spreadsheet above to find out the database columns to hql mapping. You will be able to build up complex queries using this.
+Here is an example of SQL to HQL.
+Have a look at the example below and get a feel of to create HQL from SQL Query. As you can see the queries are different. The SQL statement can return any columns whereas the HQL query can on return a single domain type, so you cannot return a count in a query for example. This will probably be implemented in a future release.
+EXAMPLE 1
+These statements below will return the locations (doors) available in an access group with an id of 1.
+SQL 
+select distinct loc_name from location l join zone z on z.ZONE_ID = l.ZONE_ID join AREA_LOCATION al on al.LOCATION_ID = l.LOCATION_ID join ACCESS_GROUP ag on ag.AREA_ID = ag.ACCESS_GROUP_ID where ag.ACCESS_GROUP_ID = 1
+HQL 
+select distinct(l) from Location l join l.areaLocations al join al.area a join a.accessGroups ag where ag.id = 1
+EXAMPLE 2
+Select all available tagholder (PROFILE_ID = 16) custom fields (MASTER_DETAIL_TYPE)
+SQL
+select distinct MASTER_DETAIL_TYPE_ID, MDT_NAME from MASTER_DETAIL_TYPE mdt join SETTING s on 
+s.SETTING_TYPE_ID = mdt.SETTING_TYPE_ID join MASTER m on m.PROFILE_ID = s.PROFILE_ID where m.PROFILE_ID = 16
+HQL
+select mdt from MasterDetailType mdt join mdt.settingType st join st.settings s join s.profile p where p.id=16
+WARNING:
+This feature is powerful but be cautious when creating queries and joining tables. Badly created joins can cause sql queries execution time to increase and impact on the performance of the Access Portal Server.
+WithClause
+This element was added to a few of the API XML message commands, after Access Portal v1.84 to allow reducing the amount of data being received whenever database domain object is requested. For example, you may want the tagholder information but are not interested in the images or access_groups related to that master, which normally uses a lot more bandwidth. By changing the withClause you will be able to request only what you wish to process on the client application. This element is for use with the dbsearch, luceneSearch, dbupdate, or registering as a broadcast listener which return database domain objects. The rules are as follows:
+If the withClause is not set, the domain object will return all the domain’s fields as well as the foreign key domains and their fields. If a withClause element is set, it will return only the returned domains field and base on the withClause, will try do an hql lookup on those withClause values. 
+Example:
+If you want to return a master domain with only its tag information, add withClause of (tags), looks as follows:
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<protocol xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" id="2" version="0" xmlns="http://www.identisoft.net/protocol">
+  <dbsearch id="0" tableName="Master" byId="1" recordCount="100">
+    <withClause>tags</withClause>
+  </dbsearch>
+</protocol>
+Produces the following result:
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="2" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <dbsearch id="0" tableName="Master" byId="1" luceneSearch="" recordCount="100" result="Success">
+        <record xsi:type="master" firstName="New Tagholder 1" lastName="QE" idnumber="New_Tagholder_1" middleName="" suffix="" gender="M" displayName="Quick Enroll 1" title="" current="1" mstStartDate="0" mstExpiryDate="0" id="1">
+            <tag tagCode="19032949570" tagCodeUntruncated="19032949570" suspend="0" report="1" suspendWithAlarm="0" startDate="0" expiryDate="0" specialEvent="0" startTime="0" expiryTime="0" ordinal="1" id="1"/>
+        </record>
+        <withClause>tags</withClause>
+    </dbsearch>
+</protocol>
+Without the withClause, producing a more detailed result  as show below:
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="2" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <dbsearch id="0" tableName="Master" byId="1" luceneSearch="" recordCount="100" result="Success">
+        <record xsi:type="master" firstName="New Tagholder 1" lastName="QE" idnumber="New_Tagholder_1" middleName="" suffix="" gender="M" displayName="Quick Enroll 1" title="" current="1" mstStartDate="0" mstExpiryDate="0" id="1">
+            <profile name="Tagholder" PDesc="Configure tagholders, their tags and access rights" PSysname="DEFAULT" id="16"/>
+            <mastertype name="Access Only" id="1"/>
+            <site name="Default Site" id="2"/>
+        </record>
+    </dbsearch>
+</protocol>
+Notice that there is no profile, master type or site information, in the previous reply, only tags wihich was requested. If you wish to join more tables you separate the joins by using a ‘.’, just like you would in an hql query. Refer to the HQL mappings to assist with the table joins. So to get all biometric templates with the master a withClause should be tags.bioTemplates.bioTemplateFormat because you would want to see the template type information as well.
+XML Message
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="2" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <dbsearch id="0" tableName="Master" byId="1" luceneSearch="" recordCount="100" result="Success">
+        <record xsi:type="master" firstName="New Tagholder 1" lastName="QE" idnumber="New_Tagholder_1" middleName="" suffix="" gender="M" displayName="Quick Enroll 1" title="" current="1" mstStartDate="0" mstExpiryDate="0" id="1">
+            <tag tagCode="19032949570" tagCodeUntruncated="19032949570" suspend="0" report="1" suspendWithAlarm="0" startDate="0" expiryDate="0" specialEvent="0" startTime="0" expiryTime="0" ordinal="1" id="1">
+                <bioTemplates btTemplateno="0" btTemplate="024C001E56FF8080B6A8BB21A387A999AE38B7B19A88B8BF8D758F9C90A197ABA3AD66B7868F8BAE6EA6719677908380857B8370925F7A7CC5373CA337A78860408C577E6C6D845E2D8B43595C586B5E785B3272513F6C3C8550994CAA4FCC70A64ABF649AA8A4B18AA18E84788BCD4484695972287E6958BD52794C8050A15EAB5DC85E9639B266CD729447A573AE78AA2ABC85C38C9D48AF84A077A67DC8A70913C420596A1AD2D1FC67F6B5D5A28848F9" id="1">
+                    <bioTemplateFormat btfName="Sagem PKCOMPV2 170" id="1"/>
+                </bioTemplates>
+                <bioTemplates btTemplateno="1" btTemplate="0246001B57FF80808290787471898395859C739B699F668380B270AF4B96528255784285C3954174C27AA694A386AE79B4752C71375D9B869F7DAB72B56D917DA573B661BB4E28544842949096778678AD54AF626D579A62A55FA64B6E4588388D3F8E6F80777B7D8CAC9BA8697D529F979F4A90A2A3B1856170366D425C5A598188663E6E6F75477C3B815D8B938852756F78869A2A35494783508C307CDDAABA76CF40EB" id="2">
+                    <bioTemplateFormat btfName="Sagem PKCOMPV2 170" id="1"/>
+                </bioTemplates>
+            </tag>
+        </record>
+        <withClause>tags.bioTemplates.bioTemplateFormat</withClause>
+    </dbsearch>
+</protocol>
+WARNING:
+This feature is powerful but be cautious when creating queries and joining tables. Badly created joins can cause sql queries execution time and payload to increase and impact on the performance of the Access Portal Server.
+Broadcast Transaction filtering
+By default, you will receive any live transactions that occur on the System as a broadcast transaction message. This causes issues when sending an API message, and a broadcast transaction was received while waiting for a response. As of Access Portal V3.04, there is an ability to switch off transaction broadcasting when connecting to the API, by setting the following properties in the CONFIGURATION table:
+CONFIGURATION.CONFIG_KEY = ‘api.broadcast.transaction’ and CONFIGURATION.CONFIG_VALUE=’false’
+To allow the API connection to receive these transaction, send a request live transaction when an API connection is established. To filter the received transactions so that you do not receive messages from another controller, for example, you can add a data element with key= ‘filter’ and a value of ‘controller=5’. 
+Example: Only receive allowed transaction from these doors (LOCATION.LOCATION_ID=1 and LOCATION.LOCATION_ID=2)
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="1" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <command type="22">
+        <data key="filter" value="eventType.etName='Allowed'"/>
+        <data key="filter" value=" location.id=1,2"/>
+    </command>
+</protocol>
+Explanation:
+Hql selection
+These are the table join and column matches from the transack entity, that need to be compared. The example will match transack->eventtype.etName and transack->location.id 
+Match
+Comma separated values to match database record against. 
+The match is done by an Object.toString().equals by default, between database record and the match value.
+If the value is wrapped in a single quote (‘) a case insensitive String.contains match is done between the record in the database and the match provided. 
+If the value is wrapped in a two single quote (‘‘) a case sensitive String.contains match is done between the record in the database and the match provided.
+Important:
+An AND comparision is done between different Hql selections and an OR is done between comma separated match values.
+WARNING:
+This feature is powerful but be cautious when creating queries and joining tables. Badly created joins can cause sql queries execution time to increase and impact on the performance of the Access Portal Server.
+Change Log
+V5.0
+The latest wrapper or nuget package needs to be used for Version 5.
+License limits updated to the API where that are now 3 different license types:
+Sessions now need to be logged out.
+Full License - 10 sessions. No table limit.
+Visitor Management – 2 sessions. Table access for the VisitorManagment license: ("master", "tag", "tagtype", "transack", "company", "department", "site", "profile", "masterimagetype", "masterimagelwthumb", "masterimage", "mastergroup", "masterdetailtype", "masterdetaillookup", "masterdetailgrouptype", "masterdetail", "masterasset", "accessgroup")
+Time and attendance – 1 session. Table access for the T&A license ("master", "tag", "transack", "eventtype", "company", "department", "site", "area", "arealocation", "floor", "terminal", "location", "deviceimprox", "mastergroup", "masterdetailtype", "masterdetaillookup", "masterdetailgrouptype", "masterdetail")
+Sessions now need to be logged out.
+Via .NET
+API.login("sysdba", Encoding.UTF8.GetBytes("masterkey") ,true);//overload added to logout
+The logout is the same as login so that we can use the same user and keep track of the session, in case of more sessions we do allow the same user to log in however the session count will increase.
+Via Rest
+Add the logout header and set to true.
+curl --location --request POST 'https://127.0.0.1/portal/api/xml' \
+--header 'Content-Type: application/xml' \
+--header 'name: sysdba' \
+--header 'pswd: bWFzdGVya2V5' \
+--header 'logout: true' \
+--header 'Cookie: JSESSIONID=node01fa8s3o3mj8571ukbrx5kxsw2f0.node0'
+changed the dbsearch luceneQuery to searchQuery
+curl --location --request PUT 'https://127.0.0.1/portal/api/xml' \
+--header 'Content-Type: application/xml' \
+--header 'token: a8298485-6058-4dde-849f-3eb79b5d0f02' \
+--header 'Cookie: JSESSIONID=node01fa8s3o3mj8571ukbrx5kxsw2f0.node0' \
+--data '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<protocol id="82945242" version="1.0" xsi:schemaLocation="http://www.identisoft.net/protocol protocol.xsd" xmlns="http://www.identisoft.net/protocol" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <dbsearch searchQuery="select m from Master m" recordCount="10">
+  </dbsearch>
+</protocol>'
+V4.65
+Added the full image rather than just the thumb.
+V4.2.0(Patch)
+updated HSQL mapping to include expiry reasons Fields. Review latest hsql mapping document.
+V4.2.0
+Please refer to the hsql mapping document for more detail regarding table changes
+These are the fields that were changed in version 4.
+EventType
+Xml attribute name is still “desc”
+DB column name is now “ET_DESC_ORIGINAL”
+Domain field is called “nameOriginal”
+TagType
+Xml attribute name is still “name”
+DB column name is now “TT_NAME_ORIGINAL”
+Domain field is called “nameOriginal”
+ModeType
+Did not contain any xml attribute
+DB table name is now “M_NAME_ORIGINAL”
+Domain field is called “nameOriginal”
+ElementAttribute
+Did not contain any xml attribute
+DB table name is now “EA_NAME_ORIGINAL”
+Domain field is called “nameOriginal”
+Element
+Did not contain any xml attribute
+DB table name is now “E_NAME_ORIGINAL”
+Domain field is called “nameOriginal”
+Report
+Did not contain any xml attribute
+DB table name is now “R_NAME_ORIGINAL”
+Domain field is called “nameOriginal”
+TruncationFormat
+Did not contain any xml attribute
+DB table name is now “TF_NAME_ORIGINAL”
+Domain field is called “nameOriginal”
+TimeZone
+Xml attribute name is still “desc”
+DB column name is now “TZ_DESC_ORIGINAL”
+Domain field is called “nameOriginal”
+Profile
+Xml attribute name is still “name”
+DB column name is now “P_NAME_ORIGINAL”
+Domain field is called “nameOriginal”
+Setting
+Xml attribute name is still “name”
+DB column name is now “S_NAME_ORIGINAL”
+Domain field is called “nameOriginal”
+MenuDetail
+Did not contain any xml attribute
+DB table name is now “MENU_DETAIL_NAME_ORIGINAL”
+Domain field is called “nameOriginal”
+MasterDEtailType
+Domain field is called “nameOriginal”
+MasterDetailGroupType
+Domain field is called “nameOriginal”
+SettingType
+Domain field is called “nameOriginal”
+MasterDetailGroupType
+Domain field is called “nameOriginal”
+V4.00
+Transaction listening is now off by default. Please send the command to enable transactions 
+V3.04
+Added support for returning changes to MasterImage and Biotemplate if registered to listen for Master/tag changes. 
+Disable broadcast of transactions if property ‘’ is set to ‘false’
+Register to only received specific transactions. Refer to Broadcast Transaction filtering.
+API Readonly functionality added. Refer to Readonly API
+V3.00
+Withclause added to Command message. Refer to WithClause
+V2.20
+Major bug fix which occurs when saving a master with a department or company and there are lots of transactions in database.
+Fixed master image not being created or updated.
+Updated Api to match database.
+Add a few accessor fields, e.g. Transackstat fields now visible through API.
+Improved message processing across multiple concurrent API connections.
+Created crypt.dll for .NET to allow integrators to send encrypted comms.
+V2.00
+There has been a major rework of the API which includes bug fixes and improvements as from Access Portal V2.00.
+protocol id of the reply will match the protocol id of the sent message.
+Login is now required for all API requests and functions. 
+Broadcasting of transactions can be now disabled.
+New listener for monitoring adds, edits, or deletes in tagholder or tags.
+New listener for controller online/offline status
+Door status listener registration type number changed and now works like the listeners. 
+Support sending controller commands to reset APB and inject a transaction.
+With clause allows for the transferring of information that you request.
+REST servlet implemented.
+Added validation to prevent deleting of Tagholders or other sensitive data.

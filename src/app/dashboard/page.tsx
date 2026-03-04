@@ -131,19 +131,19 @@ export default async function DashboardPage() {
                                         <td className="px-6 py-4">
                                             <div className="flex items-start gap-2">
                                                 <CalendarDays className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                                                <div>
-                                                    <div className="font-medium text-foreground text-xs">
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="font-medium text-foreground text-sm">
                                                         {formatAccessPeriod(visitor.visitor_access_windows)}
                                                     </div>
                                                     {visitor.visitor_access_windows?.length > 1 && (
-                                                        <div className="text-[10px] text-muted-foreground mt-0.5">
+                                                        <div className="text-xs text-muted-foreground mt-0.5 space-y-0.5 bg-black/10 rounded-md p-2">
                                                             {visitor.visitor_access_windows
                                                                 .slice()
                                                                 .sort((a, b) => a.access_date.localeCompare(b.access_date))
                                                                 .map((w) => (
-                                                                    <div key={w.id}>
-                                                                        {new Date(w.access_date + 'T00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
-                                                                        {': '}{w.start_time}–{w.end_time}
+                                                                    <div key={w.id} className="flex justify-between w-48">
+                                                                        <span>{new Date(w.access_date + 'T00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}:</span>
+                                                                        <span className="font-mono text-foreground">{w.start_time} - {w.end_time}</span>
                                                                     </div>
                                                                 ))}
                                                         </div>

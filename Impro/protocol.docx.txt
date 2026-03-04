@@ -1,0 +1,1588 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<xs:schema elementFormDefault="qualified" version="1.0" targetNamespace="http://www.identisoft.net/protocol" xmlns:tns="http://www.identisoft.net/protocol" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+  <xs:complexType name="xmlAdapter" abstract="true">
+    <xs:sequence/>
+  </xs:complexType>
+  <xs:element name="master" type="tns:master"/>
+  <xs:element name="protocol" type="tns:protocol"/>
+  <xs:element name="transack" type="tns:transack"/>
+  <xs:complexType name="protocol">
+    <xs:sequence>
+      <xs:element name="apilogin" type="tns:apiLogin" minOccurs="0"/>
+      <xs:element name="alarm" type="tns:alarm" minOccurs="0"/>
+      <xs:element name="command" type="tns:command" minOccurs="0"/>
+      <xs:element name="dbsearch" type="tns:dbTableSearch" minOccurs="0"/>
+      <xs:element name="dbupdate" type="tns:dbUpdate" minOccurs="0"/>
+      <xs:element name="error" type="tns:error" minOccurs="0"/>
+      <xs:element name="iprxmessage" type="tns:iprxMessage" minOccurs="0"/>
+      <xs:element name="luceneSearch" type="tns:luceneSearch" minOccurs="0"/>
+      <xs:element name="domain" type="tns:mapDomain4JAXB" minOccurs="0"/>
+      <xs:element name="transaction" type="tns:transack" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:long" use="required"/>
+    <xs:attribute name="version" type="xs:double" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="apiLogin">
+    <xs:sequence>
+      <xs:element name="error" type="tns:error" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="appname" type="xs:string"/>
+    <xs:attribute name="login" type="xs:string"/>
+    <xs:attribute name="password" type="xs:string"/>
+  </xs:complexType>
+  <xs:complexType name="error">
+    <xs:sequence/>
+    <xs:attribute name="desc" type="xs:string"/>
+    <xs:attribute name="input" type="xs:string"/>
+    <xs:attribute name="result" type="xs:string"/>
+  </xs:complexType>
+  <xs:complexType name="alarm">
+    <xs:sequence>
+      <xs:element name="error" type="tns:error" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="alsq" type="xs:int" use="required"/>
+    <xs:attribute name="altrdate" type="xs:string"/>
+    <xs:attribute name="aldevsla" type="xs:string"/>
+    <xs:attribute name="aldevname" type="xs:string"/>
+    <xs:attribute name="aleventid" type="xs:int" use="required"/>
+    <xs:attribute name="aleventname" type="xs:string"/>
+    <xs:attribute name="alacktype" type="xs:int" use="required"/>
+    <xs:attribute name="alackdate" type="xs:string"/>
+    <xs:attribute name="alackmstId" type="xs:int" use="required"/>
+    <xs:attribute name="alackname" type="xs:string"/>
+    <xs:attribute name="alresponse" type="xs:string"/>
+  </xs:complexType>
+  <xs:complexType name="command">
+    <xs:sequence>
+      <xs:element name="data" type="tns:keyValue" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="error" type="tns:error" minOccurs="0"/>
+      <xs:element name="status" type="tns:statusBase" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="withClause" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:long" use="required"/>
+    <xs:attribute name="type" type="xs:int" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="keyValue">
+    <xs:sequence/>
+    <xs:attribute name="key" type="xs:string"/>
+    <xs:attribute name="value" type="xs:string"/>
+  </xs:complexType>
+  <xs:complexType name="statusBase" abstract="true">
+    <xs:sequence/>
+    <xs:attribute name="status" type="xs:string"/>
+    <xs:attribute name="statusName" type="xs:string"/>
+  </xs:complexType>
+  <xs:complexType name="dbTableSearch">
+    <xs:sequence>
+      <xs:element name="record" type="tns:baseDomain" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="error" type="tns:error" minOccurs="0"/>
+      <xs:element name="withClause" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:long" use="required"/>
+    <xs:attribute name="tableName" type="xs:string"/>
+    <xs:attribute name="byId" type="xs:string"/>
+    <xs:attribute name="luceneSearch" type="xs:string"/>
+    <xs:attribute name="recordCount" type="xs:string"/>
+    <xs:attribute name="result" type="xs:string"/>
+  </xs:complexType>
+  <xs:complexType name="baseDomain" abstract="true">
+    <xs:sequence/>
+    <xs:attribute name="id" type="xs:int" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="dbUpdate">
+    <xs:sequence>
+      <xs:element name="savedModel" type="tns:baseDomain" minOccurs="0"/>
+      <xs:element name="error" type="tns:error" minOccurs="0"/>
+      <xs:element name="withClause" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="id" type="xs:long" use="required"/>
+    <xs:attribute name="result" type="xs:string"/>
+  </xs:complexType>
+  <xs:complexType name="iprxMessage">
+    <xs:sequence>
+      <xs:element name="error" type="tns:error" minOccurs="0"/>
+    </xs:sequence>
+    <xs:attribute name="command" type="xs:string"/>
+    <xs:attribute name="message" type="xs:string"/>
+    <xs:attribute name="fixedadd" type="xs:string"/>
+    <xs:attribute name="timeout" type="xs:int" use="required"/>
+    <xs:attribute name="state" type="xs:string"/>
+  </xs:complexType>
+  <xs:complexType name="luceneSearch">
+    <xs:sequence>
+      <xs:element name="error" type="tns:error" minOccurs="0"/>
+      <xs:element name="record" type="tns:baseDomain" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element name="withClause" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+    </xs:sequence>
+    <xs:attribute name="tableName" type="xs:string"/>
+    <xs:attribute name="searchTerm" type="xs:string"/>
+    <xs:attribute name="whereClause" type="xs:string"/>
+    <xs:attribute name="maxExpectedResults" type="xs:int" use="required"/>
+    <xs:attribute name="orderBy" type="xs:string"/>
+    <xs:attribute name="result" type="xs:string"/>
+    <xs:attribute name="startIndex" type="xs:int" use="required"/>
+  </xs:complexType>
+  <xs:complexType name="mapDomain4JAXB">
+    <xs:sequence>
+      <xs:element name="vAADevice" type="tns:aaDevice" minOccurs="0"/>
+      <xs:element name="vAAHub" type="tns:aaHub" minOccurs="0"/>
+      <xs:element name="vAccessGroup" type="tns:accessGroup" minOccurs="0"/>
+      <xs:element name="vAccessGroupAction" type="tns:accessGroupAction" minOccurs="0"/>
+      <xs:element name="vAccessReasonCodes" type="tns:accessReasonCodes" minOccurs="0"/>
+      <xs:element name="vAccessTimePattern" type="tns:accessTimePattern" minOccurs="0"/>
+      <xs:element name="vActionType" type="tns:actionType" minOccurs="0"/>
+      <xs:element name="vArea" type="tns:area" minOccurs="0"/>
+      <xs:element name="vAreaLocation" type="tns:areaLocation" minOccurs="0"/>
+      <xs:element name="vAuditActionType" type="tns:auditActionType" minOccurs="0"/>
+      <xs:element name="vAuditDetail" type="tns:auditDetail" minOccurs="0"/>
+      <xs:element name="vAuditSession" type="tns:auditSession" minOccurs="0"/>
+      <xs:element name="vAuditSubType" type="tns:auditSubType" minOccurs="0"/>
+      <xs:element name="vAuditType" type="tns:auditType" minOccurs="0"/>
+      <xs:element name="vBehaviorType" type="tns:behaviorType" minOccurs="0"/>
+      <xs:element name="vBioAddress" type="tns:bioAddress" minOccurs="0"/>
+      <xs:element name="vBioTemplate" type="tns:bioTemplate" minOccurs="0"/>
+      <xs:element name="vBioTemplateFormat" type="tns:bioTemplateFormat" minOccurs="0"/>
+      <xs:element name="vBioType" type="tns:bioType" minOccurs="0"/>
+      <xs:element name="vBioTypeFormat" type="tns:bioTypeFormat" minOccurs="0"/>
+      <xs:element name="vBuilding" type="tns:building" minOccurs="0"/>
+      <xs:element name="vCapability" type="tns:capability" minOccurs="0"/>
+      <xs:element name="vCapabilityRequirements" type="tns:capabilityRequirements" minOccurs="0"/>
+      <xs:element name="vCapabilityType" type="tns:capabilityType" minOccurs="0"/>
+      <xs:element name="vCard" type="tns:card" minOccurs="0"/>
+      <xs:element name="vCardBarcode" type="tns:cardBarcode" minOccurs="0"/>
+      <xs:element name="vCardBlock" type="tns:cardBlock" minOccurs="0"/>
+      <xs:element name="vCardEncoding" type="tns:cardEncoding" minOccurs="0"/>
+      <xs:element name="vCardEncodingData" type="tns:cardEncodingData" minOccurs="0"/>
+      <xs:element name="vCardEncodingType" type="tns:cardEncodingType" minOccurs="0"/>
+      <xs:element name="vCardFace" type="tns:cardFace" minOccurs="0"/>
+      <xs:element name="vCardField" type="tns:cardField" minOccurs="0"/>
+      <xs:element name="vCardFieldDetail" type="tns:cardFieldDetail" minOccurs="0"/>
+      <xs:element name="vCardFieldType" type="tns:cardFieldType" minOccurs="0"/>
+      <xs:element name="vCardImage" type="tns:cardImage" minOccurs="0"/>
+      <xs:element name="vCardSector" type="tns:cardSector" minOccurs="0"/>
+      <xs:element name="vCommonZone" type="tns:commonZone" minOccurs="0"/>
+      <xs:element name="vCommsQueue" type="tns:commsQueue" minOccurs="0"/>
+      <xs:element name="vCompany" type="tns:company" minOccurs="0"/>
+      <xs:element name="vConfiguration" type="tns:configuration" minOccurs="0"/>
+      <xs:element name="vConfigurationType" type="tns:configurationType" minOccurs="0"/>
+      <xs:element name="vController" type="tns:controller" minOccurs="0"/>
+      <xs:element name="vControllerBroadcast" type="tns:controllerBroadcast" minOccurs="0"/>
+      <xs:element name="vDatatype" type="tns:datatype" minOccurs="0"/>
+      <xs:element name="vDepartment" type="tns:department" minOccurs="0"/>
+      <xs:element name="vDevAction" type="tns:devAction" minOccurs="0"/>
+      <xs:element name="vDevActionDef" type="tns:devActionDef" minOccurs="0"/>
+      <xs:element name="vDevEventAction" type="tns:devEventAction" minOccurs="0"/>
+      <xs:element name="vDeviceAction" type="tns:deviceAction" minOccurs="0"/>
+      <xs:element name="vDeviceEvent" type="tns:deviceEvent" minOccurs="0"/>
+      <xs:element name="vDeviceImprox" type="tns:deviceImprox" minOccurs="0"/>
+      <xs:element name="vDeviceMode" type="tns:deviceMode" minOccurs="0"/>
+      <xs:element name="vDeviceOutput" type="tns:deviceOutput" minOccurs="0"/>
+      <xs:element name="vDeviceParameter" type="tns:deviceParameter" minOccurs="0"/>
+      <xs:element name="vDeviceParamType" type="tns:deviceParamType" minOccurs="0"/>
+      <xs:element name="vDeviceType" type="tns:deviceType" minOccurs="0"/>
+      <xs:element name="vDevInput" type="tns:devInput" minOccurs="0"/>
+      <xs:element name="vDevMode" type="tns:devMode" minOccurs="0"/>
+      <xs:element name="vDevOutMode" type="tns:devOutMode" minOccurs="0"/>
+      <xs:element name="vDevParam" type="tns:devParam" minOccurs="0"/>
+      <xs:element name="vDiscovery" type="tns:discovery" minOccurs="0"/>
+      <xs:element name="vDiscoveryGroup" type="tns:discoveryGroup" minOccurs="0"/>
+      <xs:element name="vElement" type="tns:element" minOccurs="0"/>
+      <xs:element name="vElementAttribute" type="tns:elementAttribute" minOccurs="0"/>
+      <xs:element name="vElementGroup" type="tns:elementGroup" minOccurs="0"/>
+      <xs:element name="vEventType" type="tns:eventType" minOccurs="0"/>
+      <xs:element name="vFloor" type="tns:floor" minOccurs="0"/>
+      <xs:element name="vHoliday" type="tns:holiday" minOccurs="0"/>
+      <xs:element name="vIDeviceFunction" type="tns:iDeviceFunction" minOccurs="0"/>
+      <xs:element name="vIDeviceType" type="tns:iDeviceType" minOccurs="0"/>
+      <xs:element name="vIFunctionType" type="tns:iFunctionType" minOccurs="0"/>
+      <xs:element name="vIp" type="tns:ip" minOccurs="0"/>
+      <xs:element name="vItAction" type="tns:itAction" minOccurs="0"/>
+      <xs:element name="vItActionType" type="tns:itActionType" minOccurs="0"/>
+      <xs:element name="vItConfig" type="tns:itConfig" minOccurs="0"/>
+      <xs:element name="vItLog" type="tns:itLog" minOccurs="0"/>
+      <xs:element name="vItPattern" type="tns:itPattern" minOccurs="0"/>
+      <xs:element name="vItPatternDaytype" type="tns:itPatternDaytype" minOccurs="0"/>
+      <xs:element name="vItPatternHolidays" type="tns:itPatternHolidays" minOccurs="0"/>
+      <xs:element name="vItPatternTimes" type="tns:itPatternTimes" minOccurs="0"/>
+      <xs:element name="vItRule" type="tns:itRule" minOccurs="0"/>
+      <xs:element name="vItRuleAction" type="tns:itRuleAction" minOccurs="0"/>
+      <xs:element name="vItRuleType" type="tns:itRuleType" minOccurs="0"/>
+      <xs:element name="vLanguage" type="tns:language" minOccurs="0"/>
+      <xs:element name="vLift" type="tns:lift" minOccurs="0"/>
+      <xs:element name="vLiftDetail" type="tns:liftDetail" minOccurs="0"/>
+      <xs:element name="vLiftDetailInput" type="tns:liftDetailInput" minOccurs="0"/>
+      <xs:element name="vLiftReader" type="tns:liftReader" minOccurs="0"/>
+      <xs:element name="vLiftType" type="tns:liftType" minOccurs="0"/>
+      <xs:element name="vLocation" type="tns:location" minOccurs="0"/>
+      <xs:element name="vLocationType" type="tns:locationType" minOccurs="0"/>
+      <xs:element name="vLongMessage" type="tns:longMessage" minOccurs="0"/>
+      <xs:element name="vMaster" type="tns:master" minOccurs="0"/>
+      <xs:element name="vMasterAsset" type="tns:masterAsset" minOccurs="0"/>
+      <xs:element name="vMasterDetail" type="tns:masterDetail" minOccurs="0"/>
+      <xs:element name="vMasterDetailGroupType" type="tns:masterDetailGroupType" minOccurs="0"/>
+      <xs:element name="vMasterDetailLookup" type="tns:masterDetailLookup" minOccurs="0"/>
+      <xs:element name="vMasterDetailType" type="tns:masterDetailType" minOccurs="0"/>
+      <xs:element name="vMasterDevice" type="tns:masterDevice" minOccurs="0"/>
+      <xs:element name="vMasterFloor" type="tns:masterFloor" minOccurs="0"/>
+      <xs:element name="vMasterGroup" type="tns:masterGroup" minOccurs="0"/>
+      <xs:element name="vMasterImage" type="tns:masterImage" minOccurs="0"/>
+      <xs:element name="vMasterImageType" type="tns:masterImageType" minOccurs="0"/>
+      <xs:element name="vMasterType" type="tns:masterType" minOccurs="0"/>
+      <xs:element name="vMenuGroup" type="tns:menuGroup" minOccurs="0"/>
+      <xs:element name="vMenuGroupItem" type="tns:menuGroupItem" minOccurs="0"/>
+      <xs:element name="vMenuItem" type="tns:menuItem" minOccurs="0"/>
+      <xs:element name="vModeType" type="tns:modeType" minOccurs="0"/>
+      <xs:element name="vNotification" type="tns:notification" minOccurs="0"/>
+      <xs:element name="vNotificationType" type="tns:notificationType" minOccurs="0"/>
+      <xs:element name="vOFunctionType" type="tns:oFunctionType" minOccurs="0"/>
+      <xs:element name="vProfile" type="tns:profile" minOccurs="0"/>
+      <xs:element name="vProfileSubType" type="tns:profileSubType" minOccurs="0"/>
+      <xs:element name="vProfileType" type="tns:profileType" minOccurs="0"/>
+      <xs:element name="vRegisteredView" type="tns:registeredView" minOccurs="0"/>
+      <xs:element name="vScanThis" type="tns:scanThis" minOccurs="0"/>
+      <xs:element name="vSearchDomain" type="tns:searchDomain" minOccurs="0"/>
+      <xs:element name="vSetting" type="tns:setting" minOccurs="0"/>
+      <xs:element name="vSettingData" type="tns:settingData" minOccurs="0"/>
+      <xs:element name="vSettingType" type="tns:settingType" minOccurs="0"/>
+      <xs:element name="vSite" type="tns:site" minOccurs="0"/>
+      <xs:element name="vSiteCode" type="tns:siteCode" minOccurs="0"/>
+      <xs:element name="vStaging" type="tns:staging" minOccurs="0"/>
+      <xs:element name="vTag" type="tns:tag" minOccurs="0"/>
+      <xs:element name="vTagEncodingType" type="tns:tagEncodingType" minOccurs="0"/>
+      <xs:element name="vTagType" type="tns:tagType" minOccurs="0"/>
+      <xs:element name="vThreatLevel" type="tns:threatLevel" minOccurs="0"/>
+      <xs:element name="vTimePattern" type="tns:timePattern" minOccurs="0"/>
+      <xs:element name="vTimePatternType" type="tns:timePatternType" minOccurs="0"/>
+      <xs:element name="vTimeTriggeredAction" type="tns:timeTriggeredAction" minOccurs="0"/>
+      <xs:element name="vTimeZone" type="tns:timeZone" minOccurs="0"/>
+      <xs:element name="vTour" type="tns:tour" minOccurs="0"/>
+      <xs:element name="vTourDetail" type="tns:tourDetail" minOccurs="0"/>
+      <xs:element name="vTransack" type="tns:transack" minOccurs="0"/>
+      <xs:element name="vTransackData" type="tns:transackData" minOccurs="0"/>
+      <xs:element name="vTransackStat" type="tns:transackStat" minOccurs="0"/>
+      <xs:element name="vTransackType" type="tns:transackType" minOccurs="0"/>
+      <xs:element name="vTruncationFormat" type="tns:truncationFormat" minOccurs="0"/>
+      <xs:element name="vUiType" type="tns:uiType" minOccurs="0"/>
+      <xs:element name="vUnitType" type="tns:unitType" minOccurs="0"/>
+      <xs:element name="vUserLogin" type="tns:userLogin" minOccurs="0"/>
+      <xs:element name="vVersion" type="tns:version" minOccurs="0"/>
+      <xs:element name="vZone" type="tns:zone" minOccurs="0"/>
+      <xs:element name="sMaster" type="tns:statusMaster" minOccurs="0"/>
+      <xs:element name="sNetwork" type="tns:statusNetwork" minOccurs="0"/>
+      <xs:element name="sDoor" type="tns:statusDoor" minOccurs="0"/>
+      <xs:element name="error" type="tns:error" minOccurs="0"/>
+    </xs:sequence>
+  </xs:complexType>
+  <xs:complexType name="aaDevice">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="aaHub">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="accessGroup">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="site" type="tns:site" minOccurs="0"/>
+          <xs:element name="area" type="tns:area" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="agNo" type="xs:int" use="required"/>
+        <xs:attribute name="agSuspended" type="xs:int" use="required"/>
+        <xs:attribute name="agReport" type="xs:int" use="required"/>
+        <xs:attribute name="agStartDate" type="xs:int" use="required"/>
+        <xs:attribute name="agEndDate" type="xs:int" use="required"/>
+        <xs:attribute name="agsGroupNo" type="xs:int"/>
+        <xs:attribute name="agArming" type="xs:int"/>
+        <xs:attribute name="agDisarming" type="xs:int"/>
+        <xs:attribute name="agAllowAccess" type="xs:int"/>
+        <xs:attribute name="agDefault" type="xs:int" use="required"/>
+        <xs:attribute name="agMaxCapacity" type="xs:int"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="site">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="area">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="accessGroupAction">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="accessReasonCodes">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="name" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="accessTimePattern">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="actionType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="areaLocation">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="auditActionType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="auditDetail">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="auditSession">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="auditSubType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="auditType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="behaviorType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="bioAddress">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="bioTemplate">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="tag" type="tns:tag" minOccurs="0"/>
+          <xs:element name="bioTemplateFormat" type="tns:bioTemplateFormat" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="btTemplateno" type="xs:int" use="required"/>
+        <xs:attribute name="btTemplate" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tag">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="tagType" type="tns:tagType" minOccurs="0"/>
+          <xs:element name="tagTypeUntruncated" type="tns:tagType" minOccurs="0"/>
+          <xs:element name="card" type="tns:card" minOccurs="0"/>
+          <xs:element ref="tns:master" minOccurs="0"/>
+          <xs:element name="bioTemplates" type="tns:bioTemplate" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="tagCode" type="xs:string" use="required"/>
+        <xs:attribute name="tagCodeUntruncated" type="xs:string"/>
+        <xs:attribute name="suspend" type="xs:int" use="required"/>
+        <xs:attribute name="report" type="xs:int" use="required"/>
+        <xs:attribute name="suspendWithAlarm" type="xs:int" use="required"/>
+        <xs:attribute name="startDate" type="xs:int" use="required"/>
+        <xs:attribute name="expiryDate" type="xs:int" use="required"/>
+        <xs:attribute name="specialEvent" type="xs:int"/>
+        <xs:attribute name="startTime" type="xs:int"/>
+        <xs:attribute name="expiryTime" type="xs:int"/>
+        <xs:attribute name="ordinal" type="xs:int"/>
+        <xs:attribute name="tagIssueNo" type="xs:int" use="required"/>
+        <xs:attribute name="tagDisplay" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tagType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="card">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="cardName" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="master">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="host" type="tns:master" minOccurs="0"/>
+          <xs:element name="tag" type="tns:tag" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="profile" type="tns:profile" minOccurs="0"/>
+          <xs:element name="company" type="tns:company" minOccurs="0"/>
+          <xs:element name="mastertype" type="tns:masterType" minOccurs="0"/>
+          <xs:element name="department" type="tns:department" minOccurs="0"/>
+          <xs:element name="card" type="tns:card" minOccurs="0"/>
+          <xs:element name="image" type="masterImageLwThumb" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="mastergroup" type="tns:masterGroup" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="masterfloor" type="tns:masterFloor" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="masterdetail" type="tns:masterDetail" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="site" type="tns:site" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="profileId" type="xs:int" use="required"/>
+        <xs:attribute name="firstName" type="xs:string" use="required"/>
+        <xs:attribute name="lastName" type="xs:string" use="required"/>
+        <xs:attribute name="idnumber" type="xs:string" use="required"/>
+        <xs:attribute name="middleName" type="xs:string"/>
+        <xs:attribute name="suffix" type="xs:string"/>
+        <xs:attribute name="gender" type="xs:string"/>
+        <xs:attribute name="displayName" type="xs:string" use="required"/>
+        <xs:attribute name="title" type="xs:string"/>
+        <xs:attribute name="current" type="xs:int" use="required"/>
+        <xs:attribute name="mstStartDate" type="xs:int" use="required"/>
+        <xs:attribute name="mstExpiryDate" type="xs:int" use="required"/>
+        <xs:attribute name="mstStartTime" type="xs:int"/>
+        <xs:attribute name="mstExpiryTime" type="xs:int"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="profile">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="inheritsFrom" type="tns:profile" minOccurs="0"/>
+          <xs:element name="profileType" type="tns:profileType" minOccurs="0"/>
+          <xs:element name="profileSubType" type="tns:profileSubType" minOccurs="0"/>
+          <xs:element name="site" type="tns:site" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="PAlias" type="xs:string"/>
+        <xs:attribute name="PDesc" type="xs:string"/>
+        <xs:attribute name="PSysname" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="profileType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="name" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="profileSubType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="name" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="company">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="masterType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="department">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="site" type="tns:site" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="masterImage">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="masterImageType" type="tns:masterImageType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="thumb" type="xs:string"/>
+        <xs:attribute name="img64" type="xs:string"/>
+        <xs:attribute name="imagetype" type="xs:int" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="masterImageType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="mitName" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="masterGroup">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="accessgroup" type="tns:accessGroup" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="mgStartDateTimeLocal" type="xs:string"/>
+        <xs:attribute name="mgEndDateTimeLocal" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="masterFloor">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="floor" type="tns:floor" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="floor">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="desc" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="masterDetail">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="detailType" type="tns:masterDetailType" minOccurs="0"/>
+          <xs:element name="masterDetailLookup" type="tns:masterDetailLookup" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="valstring" type="xs:string"/>
+        <xs:attribute name="valbinary" type="xs:base64Binary"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="masterDetailType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="detailgroup" type="tns:masterDetailGroupType" minOccurs="0"/>
+          <xs:element name="settingType" type="tns:settingType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="required" type="xs:int" use="required"/>
+        <xs:attribute name="visible" type="xs:int" use="required"/>
+        <xs:attribute name="datatype" type="xs:int" use="required"/>
+        <xs:attribute name="ordinal" type="xs:int" use="required"/>
+        <xs:attribute name="tooltip" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="masterDetailGroupType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="settingType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="masterDetailLookup">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="masterDetailType" type="tns:masterDetailType" minOccurs="0"/>
+          <xs:element name="site" type="tns:site" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="masterDetailLookupValue" type="xs:string"/>
+        <xs:attribute name="masterDetailLookupOrdinal" type="xs:int" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="bioTemplateFormat">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="btfName" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="bioType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="bioTypeFormat">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="building">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="desc" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="capability">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="capabilityRequirements">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="capabilityType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="cardBarcode">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="cardBlock">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="cardEncoding">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="cardEncodingData">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="cardEncodingType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="cardFace">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="cardField">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="cardFieldDetail">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="cardFieldType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="cardImage">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="cardSector">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="commonZone">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="commsQueue">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="configuration">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="configurationType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="controller">
+    <xs:complexContent>
+      <xs:extension base="tns:deviceImprox">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="deviceImprox">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="unitType" type="tns:unitType" minOccurs="0"/>
+          <xs:element name="building" type="tns:building" minOccurs="0"/>
+          <xs:element name="floor" type="tns:floor" minOccurs="0"/>
+          <xs:element name="site" type="tns:site" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="sla" type="xs:string" use="required"/>
+        <xs:attribute name="serial" type="xs:string"/>
+        <xs:attribute name="fixedAddr" type="xs:string" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="position" type="xs:int" use="required"/>
+        <xs:attribute name="ip" type="xs:string"/>
+        <xs:attribute name="port" type="xs:int"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="unitType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="deviceType" type="tns:deviceType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="desc" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="deviceType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="desc" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="controllerBroadcast">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="datatype">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="devAction">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="devActionDef">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="devEventAction">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="deviceAction">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="deviceEvent">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="deviceMode">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="deviceOutput">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="deviceParameter">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="deviceParamType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="devInput">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="devMode">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="devOutMode">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="devParam">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="discovery">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="unitType" type="tns:unitType" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="discoveryGroup">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="element">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="elementgroup" type="tns:elementGroup" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="elementGroup">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="settingType" type="tns:settingType" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="elementAttribute">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="eventType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="alarm" type="xs:int" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+        <xs:attribute name="desc" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="holiday">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="iDeviceFunction">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="iDeviceType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="iFunctionType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="ip">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="itAction">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="itActionType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="itConfig">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="itLog">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="itPattern">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="itPatternDaytype">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="itPatternHolidays">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="itPatternTimes">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="itRule">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="itRuleAction">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="itRuleType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="language">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="lift">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="accessgroup" type="tns:accessGroup" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string"/>
+        <xs:attribute name="desc" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="liftDetail">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="liftDetailInput">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="liftReader">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="liftType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="location">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="zone" type="tns:zone" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="zone">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="commonzone" type="tns:commonZone" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="no" type="xs:int" use="required"/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="locationType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="longMessage">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="masterAsset">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element ref="tns:master" minOccurs="0"/>
+          <xs:element name="asset" type="tns:master" minOccurs="0"/>
+          <xs:element name="masterAssetLinkedToAsset" type="tns:masterAsset" minOccurs="0" maxOccurs="unbounded"/>
+          <xs:element name="masterLinkedAsAsset" type="tns:masterAsset" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="masterAssetStart" type="xs:string"/>
+        <xs:attribute name="masterAssetExpiry" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="masterDevice">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="menuGroup">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="menuGroupItem">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="menuItem">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="modeType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="notification">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="notificationType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="oFunctionType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="registeredView">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="scanThis">
+    <xs:sequence/>
+  </xs:complexType>
+  <xs:complexType name="searchDomain">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="setting">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="settingType" type="tns:settingType" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="name" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="settingData">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="siteCode">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="staging">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tagEncodingType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="threatLevel">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="timePattern">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="timePatternType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="timeTriggeredAction">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="timeZone">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tour">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="tourDetail">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="transack">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="building" type="tns:building" minOccurs="0"/>
+          <xs:element name="company" type="tns:company" minOccurs="0"/>
+          <xs:element name="ackmaster" type="tns:master" minOccurs="0"/>
+          <xs:element ref="tns:master" minOccurs="0"/>
+          <xs:element name="unitType" type="tns:unitType" minOccurs="0"/>
+          <xs:element name="controller" type="tns:controller" minOccurs="0"/>
+          <xs:element name="department" type="tns:department" minOccurs="0"/>
+          <xs:element name="zone" type="tns:zone" minOccurs="0"/>
+          <xs:element name="transackType" type="tns:transackType" minOccurs="0"/>
+          <xs:element name="terminal" type="tns:terminal" minOccurs="0"/>
+          <xs:element name="event" type="tns:eventType" minOccurs="0"/>
+          <xs:element name="floor" type="tns:floor" minOccurs="0"/>
+          <xs:element name="hostedby" type="tns:master" minOccurs="0"/>
+          <xs:element name="location" type="tns:location" minOccurs="0"/>
+          <xs:element name="commonZone" type="tns:commonZone" minOccurs="0"/>
+          <xs:element name="transackData" type="tns:transackData" minOccurs="0"/>
+          <xs:element name="site" type="tns:site" minOccurs="0"/>
+          <xs:element name="direction" type="tns:direction" minOccurs="0"/>
+          <xs:element name="withClause" type="xs:string" minOccurs="0" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="sq" type="xs:int" use="required"/>
+        <xs:attribute name="datetimeutc" type="xs:string"/>
+        <xs:attribute name="datetimelocal" type="xs:string"/>
+        <xs:attribute name="data" type="xs:string"/>
+        <xs:attribute name="trcontroller" type="xs:string"/>
+        <xs:attribute name="trsla" type="xs:string"/>
+        <xs:attribute name="trdevname" type="xs:string"/>
+        <xs:attribute name="trdevfixedaddress" type="xs:string"/>
+        <xs:attribute name="trdevserial" type="xs:string"/>
+        <xs:attribute name="trbuildingname" type="xs:string"/>
+        <xs:attribute name="trflooname" type="xs:string"/>
+        <xs:attribute name="trlocname" type="xs:string"/>
+        <xs:attribute name="trzonename" type="xs:string"/>
+        <xs:attribute name="trdeptname" type="xs:string"/>
+        <xs:attribute name="trcompanyname" type="xs:string"/>
+        <xs:attribute name="trtagcode" type="xs:string"/>
+        <xs:attribute name="trtagtypeid" type="xs:int"/>
+        <xs:attribute name="trreasoncode" type="xs:int"/>
+        <xs:attribute name="ackdatetime" type="xs:string"/>
+        <xs:attribute name="trsitename" type="xs:string"/>
+        <xs:attribute name="reqtype" type="xs:int" use="required"/>
+        <xs:attribute name="ackdisplayname" type="xs:string"/>
+        <xs:attribute name="trReasonCodeName" type="xs:string"/>
+        <xs:attribute name="tagDisplay" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="transackType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="name" type="xs:string" use="required"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="terminal">
+    <xs:complexContent>
+      <xs:extension base="tns:deviceImprox">
+        <xs:sequence>
+          <xs:element name="controller" type="tns:controller" minOccurs="0"/>
+          <xs:element name="location" type="tns:location" minOccurs="0"/>
+          <xs:element name="locationType" type="tns:locationType" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="transackData">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="accessGroup" type="tns:accessGroup" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="tdCount" type="xs:string"/>
+        <xs:attribute name="tdIpAddress" type="xs:string"/>
+        <xs:attribute name="tdInputName" type="xs:string"/>
+        <xs:attribute name="tdAccessGroupName" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="direction">
+    <xs:sequence/>
+    <xs:attribute name="id" type="xs:int" use="required"/>
+    <xs:attribute name="name" type="xs:string"/>
+  </xs:complexType>
+  <xs:complexType name="transackStat">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element ref="tns:master" minOccurs="0"/>
+          <xs:element name="site" type="tns:site" minOccurs="0"/>
+          <xs:element name="lastApbInZone" type="tns:zone" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="lastTrDateTime" type="xs:string"/>
+        <xs:attribute name="lastTrTagcode" type="xs:string"/>
+        <xs:attribute name="lastTrTermsla" type="xs:string"/>
+        <xs:attribute name="lastTrEvent" type="xs:int"/>
+        <xs:attribute name="lastInTrDateTime" type="xs:string"/>
+        <xs:attribute name="lastInTrTagcode" type="xs:string"/>
+        <xs:attribute name="lastInTrTermsla" type="xs:string"/>
+        <xs:attribute name="lastInTrEvent" type="xs:int"/>
+        <xs:attribute name="lastOutTrDateTime" type="xs:string"/>
+        <xs:attribute name="lastOutTrTagcode" type="xs:string"/>
+        <xs:attribute name="lastOutTrTermsla" type="xs:string"/>
+        <xs:attribute name="lastOutTrEvent" type="xs:int"/>
+        <xs:attribute name="lastApbDir" type="xs:int"/>
+        <xs:attribute name="lastApbInTrDateTime" type="xs:string"/>
+        <xs:attribute name="lastApbInTrTagcode" type="xs:string"/>
+        <xs:attribute name="lastApbInTrTermsla" type="xs:string"/>
+        <xs:attribute name="lastApbInTrEvent" type="xs:int"/>
+        <xs:attribute name="lastApbOutTrDateTime" type="xs:string"/>
+        <xs:attribute name="lastApbOutTrTagcode" type="xs:string"/>
+        <xs:attribute name="lastApbOutTrTermsla" type="xs:string"/>
+        <xs:attribute name="lastApbOutTrEvent" type="xs:int"/>
+        <xs:attribute name="lastZoneno" type="xs:int"/>
+        <xs:attribute name="lastOutZoneno" type="xs:int"/>
+        <xs:attribute name="lastApbOutZoneno" type="xs:int"/>
+        <xs:attribute name="lastInZoneno" type="xs:int"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="truncationFormat">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="uiType">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="userLogin">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence>
+          <xs:element name="site" type="tns:site" minOccurs="0"/>
+          <xs:element name="profile" type="tns:profile" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="version">
+    <xs:complexContent>
+      <xs:extension base="tns:baseDomain">
+        <xs:sequence/>
+        <xs:attribute name="verFolderNum" type="xs:string"/>
+        <xs:attribute name="verScriptName" type="xs:string"/>
+        <xs:attribute name="verCreateDateTime" type="xs:string"/>
+        <xs:attribute name="verExecDateTime" type="xs:string"/>
+        <xs:attribute name="verExecSuccess" type="xs:int"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="statusMaster">
+    <xs:complexContent>
+      <xs:extension base="tns:statusBase">
+        <xs:sequence>
+          <xs:element ref="tns:master" minOccurs="0"/>
+          <xs:element name="tag" type="tns:tag" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="statusNetwork">
+    <xs:complexContent>
+      <xs:extension base="tns:statusBase">
+        <xs:sequence>
+          <xs:element name="device" type="tns:deviceImprox" minOccurs="0"/>
+        </xs:sequence>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+  <xs:complexType name="statusDoor">
+    <xs:complexContent>
+      <xs:extension base="tns:statusBase">
+        <xs:sequence>
+          <xs:element name="error" type="tns:error" minOccurs="0"/>
+        </xs:sequence>
+        <xs:attribute name="controllerid" type="xs:int" use="required"/>
+        <xs:attribute name="dosOpen" type="xs:string"/>
+        <xs:attribute name="dosClosed" type="xs:string"/>
+        <xs:attribute name="emergencyOn" type="xs:string"/>
+        <xs:attribute name="emergencyOff" type="xs:string"/>
+        <xs:attribute name="lockdownOn" type="xs:string"/>
+        <xs:attribute name="lockdownOff" type="xs:string"/>
+        <xs:attribute name="unlockOn" type="xs:string"/>
+        <xs:attribute name="unlockOff" type="xs:string"/>
+      </xs:extension>
+    </xs:complexContent>
+  </xs:complexType>
+</xs:schema>
