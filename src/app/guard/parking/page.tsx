@@ -1,13 +1,22 @@
 import { createClient } from '@/lib/supabase/server'
 import { CarFront, Clock, User, Hash } from 'lucide-react'
 
+// Strict interface for joined visitor data
+interface ParkedVisitor {
+    id: string
+    visitor_name: string
+    credential_number: number
+    status: string
+    units: { name?: string } | { name?: string }[] | null
+}
+
 export default async function GuardParkingPage() {
     const supabase = await createClient()
 
     // Fetch visitors for today who requested parking
     const today = new Date().toISOString().split('T')[0]
 
-    const { data: parkedVisitors } = await supabase
+    const { data: parkedVisitors, error: queryError } = await supabase
         .from('visitors')
         .select(`
             id,
@@ -18,6 +27,20 @@ export default async function GuardParkingPage() {
         `)
         .eq('needs_parking', true)
         .eq('access_date', today)
+
+    if (queryError) {
+        console.error('Failed to load guard parking roster:', queryError)
+        return (
+            <div className="max-w-6xl mx-auto space-y-8">
+                <div className="p-6 bg-destructive/10 border border-destructive/20 text-destructive rounded-xl">
+                    <p className="font-semibold">Error Loading Parking Roster</p>
+                    <p className="text-sm mt-1">Please contact a system administrator. Database connection failed.</p>
+                </div>
+            </div>
+        )
+    }
+
+    const visitors = (parkedVisitors as unknown as ParkedVisitor[]) || []
 
     return (
         <div className="max-w-6xl mx-auto space-y-8">
@@ -43,7 +66,7 @@ export default async function GuardParkingPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {!parkedVisitors || parkedVisitors.length === 0 ? (
+                            {visitors.length === 0 ? (
                                 <tr>
                                     <td colSpan={4} className="px-6 py-12 text-center text-muted-foreground">
                                         <div className="flex flex-col items-center justify-center gap-2 opacity-50">
@@ -53,27 +76,30 @@ export default async function GuardParkingPage() {
                                     </td>
                                 </tr>
                             ) : (
-                                parkedVisitors.map((v) => (
-                                    <tr key={v.id} className="border-b border-border/50 hover:bg-white/5 transition-colors group">
-                                        <td className="px-6 py-4 font-medium text-foreground">
-                                            {v.visitor_name}
-                                        </td>
-                                        <td className="px-6 py-4 text-muted-foreground font-mono">
-                                            {Array.isArray(v.units) ? v.units[0]?.name : (v.units as unknown as { name?: string })?.name || 'Unknown Unit'}
-                                        </td>
-                                        <td className="px-6 py-4 font-mono text-xs">
-                                            {v.credential_number}
-                                        </td>
-                                        <td className="px-6 py-4 text-right">
-                                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${v.status === 'active' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
-                                                v.status === 'revoked' ? 'bg-destructive/10 text-destructive border border-destructive/20' :
-                                                    'bg-secondary text-muted-foreground'
-                                                }`}>
-                                                {v.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))
+                                visitors.map((v) => {
+                                    const unitName = Array.isArray(v.units) ? v.units[0]?.name : v.units?.name
+                                    return (
+                                        <tr key={v.id} className="border-b border-border/50 hover:bg-white/5 transition-colors group">
+                                            <td className="px-6 py-4 font-medium text-foreground">
+                                                {v.visitor_name}
+                                            </td>
+                                            <td className="px-6 py-4 text-muted-foreground font-mono">
+                                                {unitName || 'Unknown Unit'}
+                                            </td>
+                                            <td className="px-6 py-4 font-mono text-xs">
+                                                {v.credential_number}
+                                            </td>
+                                            <td className="px-6 py-4 text-right">
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${v.status === 'active' ? 'bg-green-500/10 text-green-500 border border-green-500/20' :
+                                                    v.status === 'revoked' ? 'bg-destructive/10 text-destructive border border-destructive/20' :
+                                                        'bg-secondary text-muted-foreground'
+                                                    }`}>
+                                                    {v.status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    )
+                                })
                             )}
                         </tbody>
                     </table>

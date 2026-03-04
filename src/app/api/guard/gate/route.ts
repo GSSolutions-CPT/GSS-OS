@@ -7,31 +7,43 @@ export async function POST(request: Request) {
     const supabase = await createClient()
 
     // Require authenticated guard/super_admin
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return new NextResponse('Unauthorized', { status: 401 })
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) return new NextResponse('Unauthorized', { status: 401 })
 
-    const { data: profile } = await supabase
+    const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role')
         .eq('id', user.id)
         .single()
 
-    if (!profile || !['guard', 'super_admin'].includes(profile.role)) {
+    if (profileError || !profile || !['guard', 'super_admin'].includes(profile.role)) {
+        console.error('Gate override failed: Profile query error or unauthorized.', profileError)
         return new NextResponse('Forbidden', { status: 403 })
     }
 
-    const { gate_type } = await request.json() as { gate_type: 'pedestrian' | 'vehicle' }
+    let gate_type: 'pedestrian' | 'vehicle'
+    try {
+        const body = await request.json()
+        gate_type = body.gate_type
+    } catch (err) {
+        return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    }
 
     if (!gate_type) {
         return NextResponse.json({ error: 'gate_type is required' }, { status: 400 })
     }
 
     // Audit the manual override
-    await supabase.from('audit_logs').insert({
+    const { error: auditError } = await supabase.from('audit_logs').insert({
         actor_id: user.id,
         action: 'GUARD_GATE_OVERRIDE',
         details: { gate_type, method: 'manual' }
     })
+
+    if (auditError) {
+        console.error('Gate override failed: Could not write audit log.', auditError)
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    }
 
     // Call hardware bridge
     const externalUrl = process.env.EXTERNAL_API_URL

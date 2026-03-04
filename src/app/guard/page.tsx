@@ -5,10 +5,13 @@ import { createClient } from '@/lib/supabase/client'
 import { ScanLine, KeySquare, CarFront, AlertCircle, CheckCircle2, ShieldCheck, Loader2, Users } from 'lucide-react'
 import { useEffect } from 'react'
 
+type UnitData = { name?: string }
+type VisitorAccessWindow = { access_date: string; start_time: string; end_time: string }
+
 type ScanResult = {
     status: 'success' | 'error' | 'idle'
     message: string
-    data?: { name: string; unit: string; parking: boolean; windows: { access_date: string; start_time: string; end_time: string }[] }
+    data?: { name: string; unit: string; parking: boolean; windows: VisitorAccessWindow[] }
 }
 
 type TodayVisitor = {
@@ -16,8 +19,9 @@ type TodayVisitor = {
     visitor_name: string
     pin_code: string
     status: string
-    units?: { name?: string } | null
-    visitor_access_windows?: { access_date: string; start_time: string; end_time: string }[]
+    needs_parking?: boolean
+    units: UnitData | UnitData[] | null
+    visitor_access_windows: VisitorAccessWindow[] | null
 }
 
 export default function GuardDashboardPage() {
@@ -35,7 +39,7 @@ export default function GuardDashboardPage() {
     useEffect(() => {
         const load = async () => {
             const supabase = createClient()
-            const { data } = await supabase
+            const { data, error } = await supabase
                 .from('visitors')
                 .select(`
                     id,
@@ -49,7 +53,12 @@ export default function GuardDashboardPage() {
                 .filter('visitor_access_windows.access_date', 'eq', todayStr)
                 .order('created_at', { ascending: false })
 
-            setTodayVisitors((data as TodayVisitor[]) || [])
+            if (error) {
+                console.error('Failed to load guard dashboard visitors:', error)
+                setTodayVisitors([])
+            } else {
+                setTodayVisitors((data as unknown as TodayVisitor[]) || [])
+            }
             setVisitorsLoading(false)
         }
         load()
@@ -63,7 +72,7 @@ export default function GuardDashboardPage() {
         const supabase = createClient()
 
         // Look up visitor by PIN — must be active and have a window covering today
-        const { data: visitors } = await supabase
+        const { data: rawVisitors, error } = await supabase
             .from('visitors')
             .select(`
                 id,
@@ -76,20 +85,22 @@ export default function GuardDashboardPage() {
             .eq('pin_code', scannedPin)
             .eq('status', 'active')
 
+        if (error) {
+            console.error('Failed to verify PIN:', error)
+            setScanResult({ status: 'error', message: 'Database error while verifying PIN.' })
+            setLoading(false)
+            return
+        }
+
+        const visitors = rawVisitors as unknown as TodayVisitor[]
+
         if (!visitors || visitors.length === 0) {
             setScanResult({ status: 'error', message: 'Invalid or expired PIN. No matching active visitor found.' })
             setLoading(false)
             return
         }
 
-        const visitor = visitors[0] as {
-            id: string
-            visitor_name: string
-            needs_parking: boolean
-            status: string
-            units?: { name?: string } | null
-            visitor_access_windows?: { access_date: string; start_time: string; end_time: string }[]
-        }
+        const visitor = visitors[0]
 
         // Check if any of the visitor's windows covers today and current time
         const now = new Date()
@@ -117,15 +128,15 @@ export default function GuardDashboardPage() {
 
         const unitName = Array.isArray(visitor.units)
             ? visitor.units[0]?.name
-            : (visitor.units as { name?: string } | null)?.name || 'Unknown Unit'
+            : visitor.units?.name
 
         setScanResult({
             status: 'success',
-            message: `Valid credential — ${visitor.visitor_name} (${unitName})`,
+            message: `Valid credential — ${visitor.visitor_name} (${unitName || 'Unknown Unit'})`,
             data: {
                 name: visitor.visitor_name,
                 unit: unitName || 'Unknown Unit',
-                parking: visitor.needs_parking,
+                parking: visitor.needs_parking || false,
                 windows
             }
         })
@@ -213,8 +224,8 @@ export default function GuardDashboardPage() {
 
                     {scanResult.status !== 'idle' && (
                         <div className={`mt-6 w-full max-w-xs p-4 rounded-xl border flex items-start gap-3 ${scanResult.status === 'success'
-                                ? 'bg-green-500/10 border-green-500/20 text-green-500'
-                                : 'bg-red-500/10 border-red-500/20 text-red-500'
+                            ? 'bg-green-500/10 border-green-500/20 text-green-500'
+                            : 'bg-red-500/10 border-red-500/20 text-red-500'
                             }`}>
                             {scanResult.status === 'success'
                                 ? <CheckCircle2 className="h-5 w-5 shrink-0" />

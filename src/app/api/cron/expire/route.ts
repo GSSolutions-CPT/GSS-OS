@@ -6,12 +6,8 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: Request) {
     // 1. Verify Vercel Cron Secret for authorization
     const authHeader = request.headers.get('authorization')
-    if (process.env.CRON_SECRET) {
-        if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-            return new NextResponse('Unauthorized', { status: 401 })
-        }
-    } else {
-        console.warn('CRON_SECRET is not set. The endpoint is currently unprotected.')
+    if (!process.env.CRON_SECRET || authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+        return new NextResponse('Unauthorized', { status: 401 })
     }
 
     const supabase = await createClient()
@@ -109,13 +105,17 @@ export async function GET(request: Request) {
 
                 // 5. Queue for retry if hardware bridge failed
                 if (!deleteSuccess) {
-                    await supabase.from('api_retry_queue').insert({
+                    const { error: queueError } = await supabase.from('api_retry_queue').insert({
                         visitor_id: visitor.id,
                         action: 'delete',
                         status: 'pending',
                         payload: { action: 'remove_credential', credential_number: visitor.credential_number, tag_type: 15 }
                     })
-                    retryQueueCount++
+                    if (queueError) {
+                        console.error(`Failed to queue retry for visitor ${visitor.id}:`, queueError)
+                    } else {
+                        retryQueueCount++
+                    }
                 }
             }
 
@@ -145,17 +145,24 @@ export async function GET(request: Request) {
             const toExpire = noWindowsVisitors.filter(v => !legacyIds.has(v.id))
 
             for (const visitor of toExpire) {
-                await supabase.from('visitors').update({ status: 'expired' }).eq('id', visitor.id)
-                expiredCount++
+                const { error: legacyUpdateError } = await supabase.from('visitors').update({ status: 'expired' }).eq('id', visitor.id)
+                if (legacyUpdateError) {
+                    console.error(`Failed to expire legacy visitor ${visitor.id}:`, legacyUpdateError)
+                } else {
+                    expiredCount++
+                }
             }
         }
 
         // Global audit log for the cron sweep
-        await supabase.from('audit_logs').insert({
+        const { error: auditError } = await supabase.from('audit_logs').insert({
             actor_id: '00000000-0000-0000-0000-000000000000',
             action: 'CRON_EXPIRATION_SWEEP',
             details: { expiredCount, successCount, queueCount: retryQueueCount, checkedAt: now.toISOString() }
         })
+        if (auditError) {
+            console.error('Failed to write audit log for cron expiration sweep:', auditError)
+        }
 
         return NextResponse.json({
             success: true,

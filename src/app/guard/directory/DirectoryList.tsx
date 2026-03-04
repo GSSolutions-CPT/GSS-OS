@@ -3,20 +3,20 @@
 import { useState } from 'react'
 import { PhoneCall, Search, Hash, Building2 } from 'lucide-react'
 
+type UnitData = { name?: string; type?: string }
+
 type Profile = {
     id: string
     full_name: string | null
     role: string
-    units: unknown
+    units: UnitData | UnitData[] | null
 }
-
-type UnitData = { name?: string; type?: string }
 
 export default function DirectoryList({ initialProfiles }: { initialProfiles: Profile[] }) {
     const [searchQuery, setSearchQuery] = useState('')
 
     const filteredProfiles = initialProfiles.filter(p => {
-        const unitData = (Array.isArray(p.units) ? p.units[0] : p.units) as UnitData | undefined
+        const unitData = Array.isArray(p.units) ? p.units[0] : p.units
         const unitName = unitData?.name
         const searchString = `${p.full_name || ''} ${unitName || ''}`.toLowerCase()
         return searchString.includes(searchQuery.toLowerCase())
@@ -56,7 +56,7 @@ export default function DirectoryList({ initialProfiles }: { initialProfiles: Pr
                             </tr>
                         ) : (
                             filteredProfiles.map((p) => {
-                                const unitData = (Array.isArray(p.units) ? p.units[0] : p.units) as UnitData | undefined
+                                const unitData = Array.isArray(p.units) ? p.units[0] : p.units
                                 const unitName = unitData?.name || 'Unknown Unit'
                                 const unitType = unitData?.type || 'residential'
 
