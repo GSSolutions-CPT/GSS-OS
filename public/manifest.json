@@ -4,6 +4,7 @@
     "description": "Global Security Solutions Visitor Management Software",
     "start_url": "/",
     "display": "standalone",
+    "orientation": "portrait",
     "background_color": "#020617",
     "theme_color": "#0ea5e9",
     "icons": [
@@ -15,7 +16,8 @@
         {
             "src": "/icon-512x512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any maskable"
         }
     ]
 }

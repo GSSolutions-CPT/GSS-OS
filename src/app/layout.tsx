@@ -17,15 +17,15 @@ const geistMono = Geist_Mono({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#0ez5e9",
+  themeColor: "#0ea5e9",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
 };
 
 export const metadata: Metadata = {
-  title: "NEXUS by GSS | Visitors Managment Software",
-  description: "Global Security Solutions Visitors Managment Software",
+  title: "NEXUS by GSS | Visitors Management Software",
+  description: "Global Security Solutions Visitors Management Software",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon.png",
