@@ -25,19 +25,35 @@ namespace ImproBridge
     public class ImproWorker : BackgroundService
     {
         private readonly ILogger<ImproWorker> _logger;
-        private readonly IConfiguration _config;
-        private Supabase.Client _supabase;
+        private readonly IConfiguration _configuration;
+        private readonly Supabase.Client _supabase;
+        
+        // Impro bridge details from config
+        private readonly string _portalIp;
+        private readonly int _portalPort;
+        private readonly string _sysUser;
+        private readonly string _sysPass;
+        private readonly string _timeProfileId;
 
-        // Impro API connection details
-        private readonly string _portalIp = "127.0.0.1";
-        private readonly int _portalPort = 10010;
-        private readonly string _sysUser = "sysdba";
-        private readonly string _sysPass = "masterkey";
-
-        public ImproWorker(ILogger<ImproWorker> logger, IConfiguration config)
+        public ImproWorker(ILogger<ImproWorker> logger, IConfiguration configuration)
         {
             _logger = logger;
-            _config = config;
+            _configuration = configuration;
+
+            _portalIp = _configuration["Impro:IpAddress"] ?? "127.0.0.1";
+            _portalPort = _configuration.GetValue<int>("Impro:Port", 8080);
+            _sysUser = _configuration["Impro:Username"] ?? "sysdba";
+            _sysPass = _configuration["Impro:Password"] ?? "masterkey";
+            _timeProfileId = _configuration["Impro:TimeProfileId"] ?? "41";
+
+            var url = _configuration["Supabase:Url"] ?? throw new ArgumentNullException("Supabase:Url missing");
+            var key = _configuration["Supabase:ServiceRoleKey"] ?? throw new ArgumentNullException("Supabase:ServiceRoleKey missing");
+
+            var options = new Supabase.SupabaseOptions {
+                AutoConnectRealtime = true
+            };
+            
+            _supabase = new Supabase.Client(url, key, options);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -45,24 +61,31 @@ namespace ImproBridge
             _logger.LogInformation("ImproWorker starting.");
 
             // Initialize Supabase Client
-            var url = _config["SupabaseUrl"] ?? "YOUR_SUPABASE_URL";
-            var key = _config["SupabaseServiceRoleKey"] ?? "YOUR_SUPABASE_SERVICE_ROLE_KEY";
-            var options = new SupabaseOptions { AutoConnectRealtime = true };
-            
-            _supabase = new Supabase.Client(url, key, options);
             await _supabase.InitializeAsync();
 
+            // Subscribe to new rows in the hardware_queue table
+            var channel = _supabase.Realtime.Channel("public:hardware_queue");
             channel.AddPostgresChangeHandler(
                 Supabase.Realtime.PostgresChanges.PostgresChangesOptions.ListenType.Inserts,
                 async (sender, args) =>
                 {
-                    var record = args.Response.Payload.Record;
-                    string actionType = record["action_type"]?.ToString() ?? "UNKNOWN";
-                    
-                    _logger.LogInformation($"Received command: {actionType}");
+                    try 
+                    {
+                        var model = args.Model<HardwareQueueModel>();
+                        var record = JObject.FromObject(model);
+                        
+                        
+                        string actionType = record?["action_type"]?.ToString() ?? "UNKNOWN";
+                        
+                        _logger.LogInformation($"Received command: {actionType}");
 
-                    // Route to hardware logic
-                    await ProcessHardwareCommand(record);
+                        // Route to hardware logic
+                        await ProcessHardwareCommand(record);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error processing Postgres change");
+                    }
                 }
             );
 
@@ -127,7 +150,7 @@ namespace ImproBridge
                                 m.displayName = "Visitor_" + credNumber; 
 
                                 profile p = new profile();
-                                p.id = "41"; 
+                                p.id = _timeProfileId; // Assumes Time Profile ID configuration sets the profile appropriately
                                 m.profile = p;
 
                                 site s = new site();

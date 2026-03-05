@@ -1,15 +1,16 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using ImproBridge;
+using System;
+using System.Linq;
+using Supabase.Realtime;
 
-IHost host = Host.CreateDefaultBuilder(args)
-    .UseWindowsService() // Allows running natively as a Windows Service
-    .ConfigureServices((hostContext, services) =>
+Console.WriteLine("--- Types ---");
+var types = typeof(RealtimeChannel).Assembly.GetTypes();
+foreach (var type in types.Where(t => t.Name.Contains("PostgresChanges") || t.Name.Contains("Payload")))
+{
+    Console.WriteLine($"\nType: {type.Name}");
+    foreach (var p in type.GetProperties())
     {
-        services.AddHostedService<ImproWorker>();
-    })
-    .Build();
-
-await host.RunAsync();
+        Console.WriteLine($"  Prop: {p.PropertyType.Name} {p.Name}");
+    }
+}
 
 

@@ -129,13 +129,13 @@ export async function inviteVisitor(formData: FormData) {
             throw new Error(`Failed to create audit log: ${auditError.message}`)
         }
 
-        // 4. Hardware Bridge: Send enriched payload with all windows
+        // 4. Queue Hardware Injection (Asynchronous Pull Architecture)
         const liftAccessLevel = Array.isArray(profile.units)
             ? profile.units[0]?.type
             : (profile.units as Record<string, unknown>)?.type === 'commercial' ? 'commercial' : 'residential'
 
-        const payload = {
-            action: 'add_credential',
+        const hardwarePayload = {
+            action: 'ADD_CREDENTIAL',
             credential_number: credentialNumber,
             visitor_name: name,
             access_windows: accessWindows.map(w => ({
@@ -150,44 +150,19 @@ export async function inviteVisitor(formData: FormData) {
         }
 
         try {
-            const externalUrl = process.env.EXTERNAL_API_URL
-            const externalToken = process.env.EXTERNAL_API_TOKEN
-
-            if (externalUrl && externalToken) {
-                const response = await fetch(externalUrl, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${externalToken}`
-                    },
-                    body: JSON.stringify(payload)
-                })
-
-                if (!response.ok) {
-                    const errorText = await response.text()
-                    console.error('Hardware bridge failed:', errorText)
-                    const { error: queueError } = await supabase.from('api_retry_queue').insert({
-                        visitor_id: newVisitor.id,
-                        payload: payload,
-                        status: 'failed'
-                    })
-                    if (queueError) {
-                        console.error('CRITICAL: Failed to insert hardware failure into api_retry_queue:', queueError)
-                    }
-                }
-            } else {
-                console.warn('Hardware bridge omitted: missing env vars EXTERNAL_API_URL or EXTERNAL_API_TOKEN')
-            }
-        } catch (err) {
-            console.error('Hardware bridge network error:', err)
-            const { error: queueError } = await supabase.from('api_retry_queue').insert({
-                visitor_id: newVisitor.id,
-                payload: payload,
+            const { error: queueError } = await supabase.from('hardware_queue').insert({
+                action_type: 'ADD_CREDENTIAL',
+                payload: hardwarePayload,
                 status: 'pending'
             })
+
             if (queueError) {
-                console.error('CRITICAL: Failed to insert network failure into api_retry_queue:', queueError)
+                console.error('CRITICAL: Failed to enqueue hardware injection:', queueError)
+                throw new Error('Visitor was created in DB, but we failed to queue the hardware command. Please try again.')
             }
+        } catch (err) {
+            console.error('Database connection error during hardware queueing:', err)
+            throw new Error('Visitor was created, but the hardware queue is currently unreachable.')
         }
 
         revalidatePath('/dashboard')
@@ -281,56 +256,34 @@ export async function inviteVisitorsBulk(visitors: Array<{ name: string, email: 
             throw new Error(`Failed to create bulk audit log: ${auditError.message}`)
         }
 
-        // Try API Push in background
-        const externalUrl = process.env.EXTERNAL_API_URL
-        const externalToken = process.env.EXTERNAL_API_TOKEN
+        // Try API Push in background -> Modified to Hardware Queue
         const liftAccessLevel = Array.isArray(profile.units)
             ? profile.units[0]?.type
             : (profile.units as Record<string, unknown>)?.type === 'commercial' ? 'commercial' : 'residential'
 
-        if (externalUrl && externalToken) {
-            Promise.allSettled(insertedVisitors.map(async (record) => {
-                const payload = {
-                    action: 'add_credential',
-                    credential_number: record.credential_number,
-                    visitor_name: record.visitor_name,
-                    access_windows: [{ date: record.access_date, start_time: '06:00', end_time: '22:00' }],
-                    access_date: record.access_date,
-                    tag_type: 15,
-                    lift_access_level: liftAccessLevel
-                }
+        const hardwareItems = insertedVisitors.map(record => ({
+            action_type: 'ADD_CREDENTIAL',
+            status: 'pending',
+            payload: {
+                action: 'ADD_CREDENTIAL',
+                credential_number: record.credential_number,
+                visitor_name: record.visitor_name,
+                access_windows: [{ date: record.access_date, start_time: '06:00', end_time: '22:00' }],
+                access_date: record.access_date,
+                tag_type: 15,
+                lift_access_level: liftAccessLevel
+            }
+        }))
 
-                try {
-                    const response = await fetch(externalUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${externalToken}`
-                        },
-                        body: JSON.stringify(payload)
-                    })
-
-                    if (!response.ok) {
-                        const { error: queueError } = await supabase.from('api_retry_queue').insert({
-                            visitor_id: record.id,
-                            payload: payload,
-                            status: 'failed'
-                        })
-                        if (queueError) {
-                            console.error('CRITICAL: Bulk upload failed to insert hardware mismatch into api_retry_queue:', queueError)
-                        }
-                    }
-                } catch {
-                    const { error: queueError } = await supabase.from('api_retry_queue').insert({
-                        visitor_id: record.id,
-                        payload: payload,
-                        status: 'pending'
-                    })
-                    if (queueError) {
-                        console.error('CRITICAL: Bulk upload failed to insert missing network condition into api_retry_queue:', queueError)
-                    }
-                }
-            })).catch(err => console.error('Bulk hardware bridge error processing pipeline:', err))
+        try {
+            const { error: queueError } = await supabase.from('hardware_queue').insert(hardwareItems)
+            if (queueError) {
+                console.error('CRITICAL: Bulk upload failed to enqueue hardware items:', queueError)
+                return { error: 'Visitors created in DB, but failed to queue hardware updates. Contact support.' }
+            }
+        } catch (err) {
+            console.error('CRITICAL: Database connection error during bulk hardware queueing:', err)
+            return { error: 'Database error queuing hardware commands.' }
         }
 
         revalidatePath('/dashboard')

@@ -32,12 +32,8 @@ export async function GET(request: Request) {
             return NextResponse.json({ success: true, message: 'No active visitors found.', count: 0 })
         }
 
-        const externalUrl = process.env.EXTERNAL_API_URL
-        const externalToken = process.env.EXTERNAL_API_TOKEN
-
         let expiredCount = 0
         let successCount = 0
-        let retryQueueCount = 0
 
         for (const visitor of activeVisitors) {
             // Check if all access windows for this visitor have passed
@@ -78,44 +74,23 @@ export async function GET(request: Request) {
                 .eq('id', visitor.id)
 
             if (!updateError) {
-                // 4. Try external API delete
-                let deleteSuccess = false
-                if (externalUrl && externalToken) {
-                    try {
-                        const response = await fetch(externalUrl, {
-                            method: 'DELETE',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${externalToken}`
-                            },
-                            body: JSON.stringify({
-                                action: 'remove_credential',
-                                credential_number: visitor.credential_number,
-                                tag_type: 15
-                            })
-                        })
-                        if (response.ok) {
-                            deleteSuccess = true
-                            successCount++
-                        }
-                    } catch (err) {
-                        console.error(`Hardware API DELETE failed for visitor ${visitor.id}`, err)
-                    }
+                // 4. Queue Hardware Revocation (Asynchronous Pull Architecture)
+                const hardwarePayload = {
+                    action: 'remove_credential',
+                    credential_number: visitor.credential_number,
+                    tag_type: 15
                 }
 
-                // 5. Queue for retry if hardware bridge failed
-                if (!deleteSuccess) {
-                    const { error: queueError } = await supabase.from('api_retry_queue').insert({
-                        visitor_id: visitor.id,
-                        action: 'delete',
-                        status: 'pending',
-                        payload: { action: 'remove_credential', credential_number: visitor.credential_number, tag_type: 15 }
-                    })
-                    if (queueError) {
-                        console.error(`Failed to queue retry for visitor ${visitor.id}:`, queueError)
-                    } else {
-                        retryQueueCount++
-                    }
+                const { error: queueError } = await supabase.from('hardware_queue').insert({
+                    action_type: 'REVOKE_CREDENTIAL',
+                    payload: hardwarePayload,
+                    status: 'pending'
+                })
+
+                if (queueError) {
+                    console.error(`Failed to enqueue hardware revocation for visitor ${visitor.id}:`, queueError)
+                } else {
+                    successCount++
                 }
             }
 
@@ -158,7 +133,7 @@ export async function GET(request: Request) {
         const { error: auditError } = await supabase.from('audit_logs').insert({
             actor_id: '00000000-0000-0000-0000-000000000000',
             action: 'CRON_EXPIRATION_SWEEP',
-            details: { expiredCount, successCount, queueCount: retryQueueCount, checkedAt: now.toISOString() }
+            details: { expiredCount, successCount, checkedAt: now.toISOString() }
         })
         if (auditError) {
             console.error('Failed to write audit log for cron expiration sweep:', auditError)
@@ -167,8 +142,7 @@ export async function GET(request: Request) {
         return NextResponse.json({
             success: true,
             message: `Expired ${expiredCount} visitors.`,
-            successCount,
-            retryQueueCount
+            successCount
         })
 
     } catch (error) {

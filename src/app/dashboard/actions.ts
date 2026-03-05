@@ -38,48 +38,25 @@ export async function revokeVisitor(visitorId: string) {
 
         if (auditError) throw auditError;
 
-        // 3. Call Impro hardware bridge to delete the credential
-        const externalUrl = process.env.EXTERNAL_API_URL
-        const externalToken = process.env.EXTERNAL_API_TOKEN
+        // 3. Queue Hardware Revocation (Asynchronous Pull Architecture)
+        const hardwarePayload = {
+            action: 'REVOKE_CREDENTIAL',
+            credential_number: visitor.credential_number,
+            tag_type: 15
+        }
 
-        if (externalUrl && externalToken) {
-            const hardwarePayload = {
-                action: 'remove_credential',
-                credential_number: visitor.credential_number,
-                tag_type: 15
-            }
+        const { error: queueError } = await supabase
+            .from('hardware_queue')
+            .insert({
+                action_type: 'REVOKE_CREDENTIAL',
+                payload: hardwarePayload,
+                status: 'pending'
+            })
 
-            try {
-                const response = await fetch(externalUrl, {
-                    method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${externalToken}`
-                    },
-                    body: JSON.stringify(hardwarePayload)
-                })
-
-                if (!response.ok) {
-                    console.error(`Impro revoke failed for visitor ${visitorId}: HTTP ${response.status}`)
-                    // Queue for retry so the credential gets cleaned from hardware eventually
-                    await supabase.from('api_retry_queue').insert({
-                        visitor_id: visitorId,
-                        payload: hardwarePayload,
-                        status: 'pending',
-                        retry_count: 0
-                    })
-                }
-            } catch (err) {
-                console.error(`Impro revoke network error for ${visitorId}:`, err)
-                await supabase.from('api_retry_queue').insert({
-                    visitor_id: visitorId,
-                    payload: { action: 'remove_credential', credential_number: visitor.credential_number, tag_type: 15 },
-                    status: 'pending',
-                    retry_count: 0
-                })
-            }
-        } else {
-            console.warn('Impro hardware call skipped — EXTERNAL_API_URL or EXTERNAL_API_TOKEN not configured.')
+        if (queueError) {
+            console.error(`Failed to enqueue hardware revocation for visitor ${visitorId}:`, queueError)
+            // We don't throw here because the DB is already updated to 'revoked',
+            // but we log it heavily for monitoring.
         }
 
         revalidatePath('/dashboard')

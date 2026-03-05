@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ImproBridge")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+42d1fcca4a0e29dd49d8a10a4bb4666d20711fa9")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+0bcd71eb6c00a92e398cc932c5b28b73c67121dc")]
 [assembly: System.Reflection.AssemblyProductAttribute("ImproBridge")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ImproBridge")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

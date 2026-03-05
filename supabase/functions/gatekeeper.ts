@@ -12,6 +12,19 @@ serve(async (req) => {
   }
 
   try {
+    // 0. API Key Authentication
+    const authHeader = req.headers.get("Authorization");
+    const expectedKey = Deno.env.get("GATEKEEPER_API_KEY");
+
+    // Optional chaining/loose check in case it's not set in early local dev, but strictly we enforce it if expectedKey exists.
+    if (expectedKey && authHeader !== `Bearer ${expectedKey}`) {
+      console.warn("Unauthorized access attempt to gatekeeper.");
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 401,
+      });
+    }
+
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -34,15 +47,13 @@ serve(async (req) => {
       });
     }
 
-    // 2. Schedule Check (08:00 - 17:00)
+    // 2. Schedule Check (valid_until timestamp)
     const now = new Date();
-    const currentHour = now.getHours();
-
-    // Simple mock schedule check
-    if (currentHour < 8 || currentHour >= 18) {
-      // Allow it but flag it? Or reject? Prompt says "Validate... against Schedule".
-      // We will just log it for now, but strictly speaking "Gatekeeper" might deny entry.
-      // But for "Attendance", we want to record the punch.
+    if (creds.valid_until && new Date(creds.valid_until) < now) {
+      return new Response(JSON.stringify({ error: "Credential Expired" }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 403,
+      });
     }
 
     // 3. Attendance Logic
