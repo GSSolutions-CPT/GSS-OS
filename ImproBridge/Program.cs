@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using PortalAPI;
 
 var builder = WebApplication.CreateBuilder(args);
 

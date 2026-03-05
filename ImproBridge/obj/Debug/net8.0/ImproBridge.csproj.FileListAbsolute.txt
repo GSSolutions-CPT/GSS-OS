@@ -1,0 +1,7 @@
+C:\Users\User\OneDrive\Desktop\nexus-vercel\ImproBridge\obj\Debug\net8.0\ImproBridge.csproj.AssemblyReference.cache
+C:\Users\User\OneDrive\Desktop\nexus-vercel\ImproBridge\obj\Debug\net8.0\ImproBridge.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\User\OneDrive\Desktop\nexus-vercel\ImproBridge\obj\Debug\net8.0\ImproBridge.AssemblyInfoInputs.cache
+C:\Users\User\OneDrive\Desktop\nexus-vercel\ImproBridge\obj\Debug\net8.0\ImproBridge.AssemblyInfo.cs
+C:\Users\User\OneDrive\Desktop\nexus-vercel\ImproBridge\obj\Debug\net8.0\ImproBridge.csproj.CoreCompileInputs.cache
+C:\Users\User\OneDrive\Desktop\nexus-vercel\ImproBridge\obj\Debug\net8.0\ImproBridge.MvcApplicationPartsAssemblyInfo.cache
+C:\Users\User\OneDrive\Desktop\nexus-vercel\ImproBridge\obj\Debug\net8.0\ImproBridge.sourcelink.json
