@@ -1,16 +1,15 @@
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using ImproBridge;
 
-var builder = WebApplication.CreateBuilder(args);
+IHost host = Host.CreateDefaultBuilder(args)
+    .UseWindowsService() // Allows running natively as a Windows Service
+    .ConfigureServices((hostContext, services) =>
+    {
+        services.AddHostedService<ImproWorker>();
+    })
+    .Build();
 
-// Add services to the container.
-builder.Services.AddControllers();
+await host.RunAsync();
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-
-// Map the controllers
-app.MapControllers();
-
-app.Run();
 
