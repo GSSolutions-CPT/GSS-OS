@@ -33,8 +33,7 @@ namespace ImproBridge.Controllers
             {
                 if (api.connect(_portalIp, _portalPort, 5000)) //
                 {
-                    // Login with logout tracking enabled (V5 requirement)
-                    api.login(_sysUser, Encoding.UTF8.GetBytes(_sysPass), true); //
+                    // api.login(_sysUser, Encoding.UTF8.GetBytes(_sysPass), true); //
 
                     // Assuming request.GateId is the terminal SLA (e.g., "02010103")
                     // And request.Action is "OPEN_DOOR"
@@ -77,7 +76,7 @@ namespace ImproBridge.Controllers
             {
                 if (api.connect(_portalIp, _portalPort, 5000))
                 {
-                    api.login(_sysUser, Encoding.UTF8.GetBytes(_sysPass), true); //
+                    api.login(_sysUser, Encoding.UTF8.GetBytes(_sysPass)); // Note: Overload has no 'true' param in this wrapper version
 
                     // 1. Create the Master (Tagholder)
                     master m = new master();
@@ -109,7 +108,7 @@ namespace ImproBridge.Controllers
                     t.tagType = tt;
 
                     // Assign tag to master
-                    m.tags = new tag[] { t };
+                    m.tag = new tag[] { t }; //
 
                     // 3. Persist to Portal Database
                     master savedMaster = (master)api.saveOrUpdate(m);
